@@ -182,7 +182,11 @@ ALL_BRANDS = [
     'Amazon', 'Barnes & Noble', 'Penguin Random House', 'Nintendo', 'PlayStation', 'Xbox',
     'Toyota', 'Honda', 'Ford', 'Tesla', 'BMW',
     'Local Thrift Store', 'Goodwill', 'Salvation Army', 'Depop', 'Poshmark', 'Etsy', 'eBay',
-    'Local Farm', 'Farmers Market', 'Small Business', 'Handmade', 'Generic', 'Other'
+    'Local Farm', 'Farmers Market', 'Small Business', 'Handmade', 'Generic', 'Zara', 'H&M', 'Uniqlo', 'SHEIN', 
+    'Forever 21', 'Primark', 'Mango', 'Pull&Bear', 'Bershka', 'Stradivarius', 'Topshop,Fashion Nova', 'Urban Outfitters', 'ASOS', 'Boohoo', 'PrettyLittleThing', 'Missguided'
+    , 'Cotton On', 'Old Navy', 'GAP', 'C&A', 'New Look', 'River Island', 'Next', 'Reserved', 'Monki', 'Weekday', '& Other Stories', 'Oysho', 'Massimo Dutti', 'LC Waikiki',
+    'Defacto', 'Giordano', 'Baleno', 'Metersbonwe', 'UR (Urban Revivo)', 'Sinsay', 'Lindex', 'Gina Tricot', 'Cubus', 'Terranova', 'Calliope', 'Splash', 'Max Fashion', 'Westside', 'Pantaloons'
+    , 'Reliance Trends', 'Shoppers Stop', 'Avra', 'NA-KD', 'Revolve' 'Other'
 ]
 
 # Simplified Multipliers for logic
