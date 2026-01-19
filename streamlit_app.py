@@ -54,7 +54,7 @@ st.markdown("""
         font-size: 1rem;
     }
 
-    /* --- ANALYTICS DASHBOARD CARDS (Reference Image Style) --- */
+    /* --- ANALYTICS DASHBOARD CARDS --- */
     .kpi-card {
         background: white;
         border-radius: 15px;
@@ -79,10 +79,6 @@ st.markdown("""
         60% { transform: scale(1.1); opacity: 1; }
         100% { transform: scale(1); opacity: 1; }
     }
-    @keyframes shine {
-        0% { background-position: -100px; }
-        100% { background-position: 300px; }
-    }
 
     .badge-popup-overlay {
         position: fixed;
@@ -95,6 +91,7 @@ st.markdown("""
         backdrop-filter: blur(5px);
     }
     .badge-popup-card {
+        position: relative;
         background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
         padding: 40px;
         border-radius: 30px;
@@ -105,6 +102,40 @@ st.markdown("""
         max-width: 500px;
         width: 90%;
     }
+    
+    /* CLOSE BUTTON STYLES */
+    .close-btn-x {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #9ca3af;
+        cursor: pointer;
+        line-height: 1;
+        transition: color 0.2s;
+        z-index: 10002;
+    }
+    .close-btn-x:hover { color: #ef4444; }
+
+    .close-action-btn {
+        margin-top: 25px;
+        background: #16a34a;
+        color: white;
+        border: none;
+        padding: 10px 30px;
+        border-radius: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 1rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .close-action-btn:hover {
+        background: #15803d;
+        transform: scale(1.05);
+    }
+
     .badge-popup-icon { font-size: 6rem; margin-bottom: 10px; display: block; }
     .badge-popup-title { font-size: 2.5rem; font-weight: 900; color: #166534; margin: 0; }
     .badge-popup-desc { font-size: 1.2rem; color: #374151; margin-top: 10px; }
@@ -449,14 +480,18 @@ def trigger_animation(is_eco: bool):
 def show_badge_popup(badge_key):
     badge = BADGES[badge_key]
     st.markdown(f"""
-    <div class="badge-popup-overlay" onclick="this.style.display='none'">
-        <div class="badge-popup-card">
+    <div class="badge-popup-overlay" id="badge-overlay-{badge_key}" onclick="document.getElementById('badge-overlay-{badge_key}').style.display='none'">
+        <div class="badge-popup-card" onclick="event.stopPropagation()">
+            <div class="close-btn-x" onclick="document.getElementById('badge-overlay-{badge_key}').style.display='none'">&times;</div>
+            
             <span class="badge-popup-icon">{badge['icon']}</span>
             <h2 class="badge-popup-title">BADGE UNLOCKED!</h2>
             <h3 style="color: #333; margin-top: 5px;">{badge['name']}</h3>
             <p class="badge-popup-desc">{badge['desc']}</p>
             <div class="badge-popup-rarity">{badge['rarity']}</div>
-            <p style="margin-top:20px; font-size:0.8rem; color:#888;">(Click anywhere to close)</p>
+            
+            <br>
+            <button class="close-action-btn" onclick="document.getElementById('badge-overlay-{badge_key}').style.display='none'">Continue</button>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -645,15 +680,10 @@ with tab_analytics:
         total_co2 = df['co2_impact'].sum()
         
         # 1. TOP CARDS (Simulated Impact Conversions)
-        # Trees: ~20kg CO2/year per tree. 
-        # Ice: ~3kg ice lost per 1kg CO2. 
-        # Lightbulbs: Arbitrary energy unit.
-        # Cars: ~4.6 tons/year.
-        
         trees_saved = int(total_co2 / 20) 
         lightbulbs = int(total_co2 * 10)
         ice_saved = int(total_co2 * 3) 
-        cars_off_road = round(total_co2 / 4600, 4) # Very small number usually
+        cars_off_road = round(total_co2 / 4600, 4) 
         
         c1, c2, c3, c4, c5 = st.columns(5)
         with c1: st.markdown(f"""<div class="kpi-card"><div class="kpi-icon">☁️</div><div class="kpi-value">{total_co2:.0f}</div><div class="kpi-label">Kg of CO2</div></div>""", unsafe_allow_html=True)
