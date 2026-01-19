@@ -23,7 +23,7 @@ st.set_page_config(
 )
 
 # ==================== ADVANCED CSS & ANIMATIONS ====================
-st.markdown("""
+"st.markdown"("""
 <style>
     /* --- GLOBAL THEME --- */
     @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
