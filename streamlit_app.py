@@ -30,7 +30,6 @@ st.markdown("""
     
     html, body, [class*="css"] {
         font-family: 'Nunito', sans-serif;
-        color: #000000 !important;
     }
 
     .stApp {
@@ -39,22 +38,51 @@ st.markdown("""
     }
 
     /* --- TEXT VISIBILITY FIXES --- */
-    h1, h2, h3, h4, h5, h6, p, div, span, label, .stMarkdown {
+    /* Force main text to black, but be specific to avoid breaking components */
+    h1, h2, h3, h4, h5, h6, p, label, .stMarkdown {
         color: #000000 !important;
     }
     
-    /* --- INPUT FIELD FIXES (WHITE TEXT FOR DROPDOWNS) --- */
-    /* This overrides the black text rule specifically for selectbox/dropdown interactions */
-    .stSelectbox div[data-baseweb="select"] span {
-        color: white !important; /* Selected item text */
+    /* --- DROPDOWN & INPUT FIXES (CRITICAL UPDATE) --- */
+    
+    /* 1. The Container for the Selected Item (The box you click) */
+    div[data-baseweb="select"] > div {
+        background-color: rgba(255, 255, 255, 0.9) !important;
+        border-color: rgba(0,0,0,0.2) !important;
+        color: #000000 !important;
     }
+    
+    /* 2. The Text of the Selected Item */
+    div[data-baseweb="select"] span {
+        color: #000000 !important; 
+    }
+
+    /* 3. The Dropdown Menu (The list that pops up) */
+    ul[data-baseweb="menu"] {
+        background-color: #ffffff !important;
+        border: 1px solid #ccc !important;
+    }
+
+    /* 4. The Options inside the Menu */
+    ul[data-baseweb="menu"] li {
+        background-color: #ffffff !important;
+    }
+    
+    /* 5. Text inside the options */
     ul[data-baseweb="menu"] li span {
-        color: white !important; /* Dropdown options text */
+        color: #000000 !important;
     }
-    /* Labels remain black */
+
+    /* 6. Hover/Selected State in Menu */
+    ul[data-baseweb="menu"] li[aria-selected="true"] {
+        background-color: #e8f5e9 !important; /* Light Green highlight */
+    }
+
+    /* Fix labels for inputs */
     .stSelectbox label, .stNumberInput label, .stSlider label, .stTextInput label {
         color: #000000 !important;
-        font-weight: bold;
+        font-weight: 800;
+        font-size: 1rem;
     }
 
     /* --- BACKGROUND AMBIENT ANIMATION --- */
