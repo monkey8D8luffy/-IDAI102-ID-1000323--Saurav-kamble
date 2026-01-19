@@ -520,4 +520,4 @@ with tab_dash:
                 st.metric("Total CO₂", f"{total_co2:.1f} kg", delta_color="inverse", delta="Low is good!")
             with m3:
                 eco_items = df[df['type'].isin(ECO_FRIENDLY_CATEGORIES)].shape[0]
-                rate = (eco_items/len(df)*100) if len
+                rate = (eco_items/len(df)*100) if len(df) > 0 else 0
