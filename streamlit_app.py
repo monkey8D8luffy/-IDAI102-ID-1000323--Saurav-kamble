@@ -43,18 +43,23 @@ st.markdown("""
         color: #000000 !important;
     }
     
-    /* --- INPUT FIELD FIXES (WHITE TEXT FOR DROPDOWNS) --- */
-    /* This overrides the black text rule specifically for selectbox/dropdown interactions */
-    .stSelectbox div[data-baseweb="select"] span {
-        color: white !important; /* Selected item text */
+    /* --- CRITICAL FIX: DROPDOWN TEXT COLOR --- */
+    /* This forces the text inside the selected box to be WHITE */
+    div[data-baseweb="select"] > div {
+        color: white !important;
+        background-color: #262730; /* Ensure dark background for contrast */
     }
-    ul[data-baseweb="menu"] li span {
-        color: white !important; /* Dropdown options text */
+    
+    /* This forces the text inside the dropdown MENU (options) to be WHITE */
+    div[data-baseweb="popover"] li, 
+    div[data-baseweb="popover"] div {
+        color: white !important;
     }
-    /* Labels remain black */
+    
+    /* Keep the Labels (Titles) Black */
     .stSelectbox label, .stNumberInput label, .stSlider label, .stTextInput label {
         color: #000000 !important;
-        font-weight: bold;
+        font-weight: 800;
     }
 
     /* --- BACKGROUND AMBIENT ANIMATION --- */
@@ -93,25 +98,25 @@ st.markdown("""
         top: -10vh;
         font-size: 2.5rem;
         color: #8D6E63 !important; /* Brown/Sepia color */
-        animation: fallFast 1s linear forwards;
+        animation: fallFast 1.5s linear forwards; /* Slightly longer to ensure visibility */
         pointer-events: none;
-        z-index: 9999;
+        z-index: 99999;
     }
 
     /* 2. Fast Rising Green Leaves (Eco) */
     @keyframes riseFast {
-        0% { transform: translateY(110vh) rotate(0deg); opacity: 1; }
+        0% { transform: translateY(105vh) rotate(0deg); opacity: 1; }
         100% { transform: translateY(-10vh) rotate(-360deg); opacity: 0; }
     }
 
     .green-leaf-burst {
         position: fixed;
-        bottom: -10vh;
+        bottom: -10vh; /* Start below screen */
         font-size: 2.5rem;
         color: #2e7d32 !important; /* Green color */
-        animation: riseFast 1s linear forwards;
+        animation: riseFast 1.5s linear forwards;
         pointer-events: none;
-        z-index: 9999;
+        z-index: 99999;
     }
 
     /* --- GLASSMORPHISM CARDS --- */
@@ -394,7 +399,7 @@ def suggest_eco_option(selected_product: str) -> Optional[str]:
     return None
 
 def trigger_animation(is_eco: bool):
-    """Triggers a 1-second burst of leaves."""
+    """Triggers a 1.5-second burst of leaves."""
     leaves_html = ""
     # Setup for Eco (Green Rising) vs Non-Eco (Dry Falling)
     if is_eco:
@@ -403,12 +408,14 @@ def trigger_animation(is_eco: bool):
     else:
         css_class = "dry-leaf-burst"
         leaf_char = "🍂"
-        
-    # Generate 25 leaves with random horizontal positions and slight delay staggering
-    for i in range(25):
+    
+    # Generate a unique container ID to force browser re-render on every click
+    container_id = f"anim_container_{int(time.time() * 1000)}"
+    
+    leaves_html = f'<div id="{container_id}">'
+    for i in range(30):
         left_pos = random.randint(5, 95)
-        delay = random.uniform(0, 0.5) # Stagger start times slightly
-        # Randomize size slightly
+        delay = random.uniform(0, 0.5) 
         size = random.uniform(1.5, 3.0)
         leaves_html += f"""
         <div class="{css_class}" 
@@ -416,6 +423,7 @@ def trigger_animation(is_eco: bool):
              {leaf_char}
         </div>
         """
+    leaves_html += '</div>'
     
     st.markdown(leaves_html, unsafe_allow_html=True)
 
@@ -444,7 +452,6 @@ def check_badges():
         st.session_state.user_profile['badges'].append(new_badge)
         badge_info = BADGES[new_badge]
         st.toast(f"🏆 BADGE UNLOCKED: {badge_info['name']}", icon=badge_info['icon'])
-        # REMOVED BALLOONS HERE as per request
         save_data({
             'purchases': st.session_state.purchases,
             'user_profile': st.session_state.user_profile
@@ -517,144 +524,4 @@ with tab_dash:
                 
                 brand = st.selectbox("🏷️ Brand", ALL_BRANDS)
                 
-                price = st.slider("💰 Price (₹)", min_value=0, max_value=50000, value=500, step=100)
-                
-                submitted = st.form_submit_button("Add to Tracker", type="primary", use_container_width=True)
-                
-                if submitted:
-                    if price > 0:
-                        add_purchase(product_type, brand, price)
-                        st.success(f"Added {product_type}!")
-                        
-                        # TRIGGER ANIMATION LOGIC
-                        is_eco_purchase = product_type in ECO_FRIENDLY_CATEGORIES
-                        trigger_animation(is_eco_purchase)
-                        
-                    else:
-                        st.warning("Please set a price greater than 0.")
-            st.markdown('</div>', unsafe_allow_html=True)
-
-            st.markdown("#### 💡 Quick Eco-Tip")
-            tips = [
-                "Buying used saves ~80% CO₂ vs new!",
-                "Local produce = 5x less transport emissions.",
-                "Repair > Replace.",
-                "Combine deliveries to save fuel.",
-                "Thrifting is the new cool.",
-                "Eating plant-based just one day a week makes a huge difference."
-            ]
-            st.info(random.choice(tips))
-
-    with col_stats:
-        st.markdown("#### 🚀 Live Impact Overview")
-        
-        if st.session_state.purchases:
-            df = pd.DataFrame(st.session_state.purchases)
-            total_spend = df['price'].sum()
-            total_co2 = df['co2_impact'].sum()
-            
-            m1, m2, m3 = st.columns(3)
-            with m1:
-                st.metric("Total Spent", f"₹{total_spend:,.0f}", delta=f"{len(df)} items")
-            with m2:
-                st.metric("Total CO₂", f"{total_co2:.1f} kg", delta_color="inverse", delta="Low is good!")
-            with m3:
-                eco_items = df[df['type'].isin(ECO_FRIENDLY_CATEGORIES)].shape[0]
-                rate = (eco_items/len(df)*100) if len(df) > 0 else 0
-                st.metric("Eco Choices", f"{eco_items}", f"{rate:.0f}% Rate")
-
-            st.markdown("#### 🕰️ Recent Activity")
-            recent = df.tail(5).iloc[::-1]
-            for _, row in recent.iterrows():
-                icon = "🍃" if row['type'] in ECO_FRIENDLY_CATEGORIES else "🛍️"
-                color = "#2e7d32" if row['type'] in ECO_FRIENDLY_CATEGORIES else "#4a5568"
-                st.markdown(
-                    f"""
-                    <div style="padding: 10px; background: rgba(255,255,255,0.7); border-radius: 10px; margin-bottom: 8px; border-left: 4px solid {color}; color: black;">
-                        <span style="font-size: 1.2rem;">{icon}</span> 
-                        <strong>{row['type']}</strong> ({row['brand']}) 
-                        <span style="float: right; color: #000; font-weight: bold;">₹{row['price']:,.0f} | {row['co2_impact']:.1f}kg CO₂</span>
-                    </div>
-                    """, 
-                    unsafe_allow_html=True
-                )
-        else:
-            st.markdown(
-                """
-                <div style="text-align: center; padding: 40px; color: #000;">
-                    <h3>👻 Nothing here yet!</h3>
-                    <p>Log your first purchase to see your impact statistics.</p>
-                </div>
-                """, 
-                unsafe_allow_html=True
-            )
-
-# --- ANALYTICS TAB ---
-with tab_analytics:
-    if st.session_state.purchases:
-        df = pd.DataFrame(st.session_state.purchases)
-        df['date_dt'] = pd.to_datetime(df['date'])
-        
-        row1_col1, row1_col2 = st.columns(2)
-        
-        with row1_col1:
-            st.markdown("### 📅 Spending vs CO₂ Over Time")
-            fig_line = px.line(df, x='date_dt', y=['price', 'co2_impact'], markers=True, 
-                               labels={'value': 'Amount', 'date_dt': 'Date'},
-                               color_discrete_map={'price': '#2ecc71', 'co2_impact': '#e74c3c'})
-            fig_line.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)', 
-                plot_bgcolor='rgba(0,0,0,0)', 
-                legend_title_text='',
-                font=dict(color='black')
-            )
-            st.plotly_chart(fig_line, use_container_width=True)
-
-        with row1_col2:
-            st.markdown("### 🍩 Category Impact Breakdown")
-            fig_pie = px.sunburst(df, path=['type', 'brand'], values='co2_impact', 
-                                  color='co2_impact', color_continuous_scale='RdYlGn_r')
-            fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', font=dict(color='black'))
-            st.plotly_chart(fig_pie, use_container_width=True)
-            
-        st.markdown("### 📉 Efficiency Scatter Plot (Price vs Impact)")
-        st.caption("Identify items that were expensive but low impact (Green zone) vs cheap but high impact (Red zone)")
-        fig_scatter = px.scatter(df, x='price', y='co2_impact', color='type', size='co2_impact',
-                                 hover_data=['brand'], size_max=40)
-        fig_scatter.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)', 
-            plot_bgcolor='rgba(255,255,255,0.4)',
-            xaxis_title="Price (₹)",
-            yaxis_title="CO₂ Impact (kg)",
-            font=dict(color='black')
-        )
-        st.plotly_chart(fig_scatter, use_container_width=True)
-        
-    else:
-        st.info("Log some data to unlock analytics!")
-
-# --- PROFILE TAB ---
-with tab_profile:
-    p_col1, p_col2 = st.columns([1, 2])
-    
-    with p_col1:
-        st.markdown("### ⚙️ Settings")
-        with st.form("profile_update_v2"):
-            new_name = st.text_input("Display Name", st.session_state.user_profile['name'])
-            new_budget = st.number_input("Monthly Budget (₹)", value=st.session_state.user_profile['monthlyBudget'])
-            new_goal = st.number_input("CO₂ Limit Goal (kg)", value=st.session_state.user_profile['co2Goal'])
-            
-            if st.form_submit_button("Update Profile"):
-                st.session_state.user_profile.update({
-                    'name': new_name,
-                    'monthlyBudget': new_budget,
-                    'co2Goal': new_goal
-                })
-                save_data({'purchases': st.session_state.purchases, 'user_profile': st.session_state.user_profile})
-                st.success("Updated!")
-                st.rerun()
-                
-        if st.button("🗑️ Reset All Data", type="secondary"):
-            st.session_state.purchases = []
-            st.session_state.user_profile['badges'] = []
-            save_data(get_default_data())
+                price = st.slider("💰 Price (₹
