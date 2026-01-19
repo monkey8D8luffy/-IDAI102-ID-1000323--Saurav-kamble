@@ -147,6 +147,17 @@ st.markdown("""
         color: #2e7d32 !important;
         box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
+    
+    /* Eco Suggestion Box */
+    .eco-suggestion {
+        background-color: #e8f5e9;
+        border-left: 5px solid #2e7d32;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        color: #1b5e20;
+    }
 </style>
 <div class="leaf">🍃</div>
 <div class="leaf">🍂</div>
@@ -156,55 +167,114 @@ st.markdown("""
 
 # ==================== CONSTANTS ====================
 PRODUCT_TYPES = [
+    # --- Fashion & Apparel ---
     'Fast Fashion', 'T-Shirt', 'Jeans', 'Dress', 'Suit', 'Jacket', 'Sweater', 'Hoodie', 'Shorts', 'Skirt',
     'Blazer', 'Coat', 'Pants', 'Leggings', 'Activewear', 'Swimwear', 'Underwear', 'Socks', 'Shoes', 'Sneakers',
+    'Cotton Shirt', 'Linen Shirt', 'Bamboo Fabric Clothing', 'Hemp Clothing', 'Recycled Polyester Gear',
+    'Upcycled Jacket', 'Vegan Leather Jacket', 'Organic Cotton T-Shirt', 'Rental Dress', 'Rental Tuxedo',
+    'Handloom Saree', 'Khadi Kurta', 'Ethical Wool Sweater', 'Silk Scarf (Ahimsa Silk)',
+    
+    # --- Electronics & Tech ---
     'Electronics', 'Smartphone', 'Laptop', 'Tablet', 'Desktop Computer', 'Monitor', 'Keyboard', 'Mouse',
     'Headphones', 'Gaming Console', 'Smartwatch', 'Camera', 'TV', 'Speaker', 'Drone',
+    'Refurbished Smartphone', 'Refurbished Laptop', 'Second-Hand Tablet', 'Used Camera Lens', 'Used Gaming Console',
+    'E-Reader', 'Solar Charger', 'Rechargeable Batteries', 'Smart Thermostat', 'LED Smart Bulb',
+    'Energy Efficient AC', 'Repair Service (Phone)', 'Repair Service (Laptop)',
+
+    # --- Food & Groceries ---
     'Local Groceries', 'Organic Vegetables', 'Organic Fruits', 'Meat', 'Dairy Products', 'Snacks',
-    'Home Decor', 'Sofa', 'Chair', 'Table', 'Bed', 'Mattress', 'Kitchenware', 'Appliance',
-    'Cosmetics', 'Skincare', 'Perfume', 'Hair Care', 'Personal Care',
-    'Books (New)', 'Books (Used)', 'E-book', 'Vinyl Record', 'Video Game',
-    'Yoga Mat', 'Gym Equipment', 'Bicycle', 'Sports Gear', 'Camping Gear',
-    'Car Parts', 'Tires', 'Car Accessories',
     'Restaurant Meal', 'Fast Food', 'Coffee', 'Dessert',
+    'Plant-Based Meat', 'Oat Milk', 'Almond Milk', 'Soy Milk', 'Loose Leaf Tea', 'Fair Trade Coffee',
+    'Bulk Grains (No Plastic)', 'Ugly Produce (Imperfect Veg)', 'Locally Sourced Honey', 'Home-Grown Herbs',
+    'Compostable Coffee Pods', 'Tap Water (Filtered)', 'Bottled Water',
+
+    # --- Home & Living ---
+    'Home Decor', 'Sofa', 'Chair', 'Table', 'Bed', 'Mattress', 'Kitchenware', 'Appliance',
+    'Vintage Furniture', 'Bamboo Furniture', 'Reclaimed Wood Table', 'Cast Iron Skillet (Lifetime)',
+    'Glass Food Containers', 'Beeswax Wraps', 'Silicone Stasher Bags', 'Compostable Plates',
+    'Biodegradable Trash Bags', 'Loofah Sponge', 'Bamboo Toothbrush', 'Safety Razor', 'Menstrual Cup',
+    'Solid Shampoo Bar', 'Refillable Soap', 'Solar Garden Lights', 'Rainwater Harvesting Kit',
+
+    # --- Transport & Travel ---
+    'Car Parts', 'Tires', 'Car Accessories',
+    'Bicycle', 'E-Bike', 'Electric Scooter', 'Public Transit Pass', 'Train Ticket', 'Flight Ticket',
+    'EV Charging Session', 'Carpool Contribution', 'Walking Shoes',
+
+    # --- Books, Media & Hobbies ---
+    'Books (New)', 'Books (Used)', 'E-book', 'Vinyl Record', 'Video Game',
+    'Library Membership', 'Digital Magazine Subscription', 'Audiobook', 'Digital Game Download',
+    'Yoga Mat (Cork)', 'Gym Equipment', 'Sports Gear', 'Camping Gear', 'Used Sports Gear',
+    'Musical Instrument (Used)', 'Art Supplies (Non-Toxic)',
+
+    # --- Specialized & Eco ---
     'Leather Goods', 'Vegan Leather',
-    'Second-Hand Item', 'Thrifted Clothing', 'Used Electronics', 'Vintage Furniture', 'Refurbished Tech',
-    'Office Supplies', 'Stationery', 'Art Supplies',
-    'Gift Card', 'Subscription', 'Event Ticket', 'Digital Download', '500+ (Other)'
+    'Second-Hand Item', 'Thrifted Clothing', 'Used Electronics', 'Refurbished Tech',
+    'Office Supplies', 'Stationery', 'Recycled Paper Notebook', 'Refillable Pen',
+    'Gift Card', 'Subscription', 'Event Ticket', 'Digital Download', 'Carbon Offset Credit', 'Tree Planting Donation',
+    '500+ (Other)'
 ]
 
 ALL_BRANDS = [
+    # Global Giants
     'Zara', 'H&M', 'Nike', 'Adidas', 'Uniqlo', 'Gucci', 'Louis Vuitton', 'Patagonia', 'The North Face', 'Levi\'s',
     'Apple', 'Samsung', 'Sony', 'Dell', 'HP', 'Lenovo', 'Asus', 'Microsoft', 'Google', 'Canon',
-    'Whole Foods', 'Trader Joe\'s', 'Nestle', 'Coca-Cola', 'Pepsi', 'Danone', 'Beyond Meat',
     'IKEA', 'West Elm', 'Pottery Barn', 'Ashley Furniture', 'Wayfair',
     'Sephora', 'L\'Oreal', 'Estee Lauder', 'Mac', 'Fenty Beauty', 'The Body Shop', 'Lush',
     'Amazon', 'Barnes & Noble', 'Penguin Random House', 'Nintendo', 'PlayStation', 'Xbox',
-    'Toyota', 'Honda', 'Ford', 'Tesla', 'BMW',
-    'Local Thrift Store', 'Goodwill', 'Salvation Army', 'Depop', 'Poshmark', 'Etsy', 'eBay',
-    'Local Farm', 'Farmers Market', 'Small Business', 'Handmade', 'Generic', 'Zara', 'H&M', 'Uniqlo', 'SHEIN', 
-    'Forever 21', 'Primark', 'Mango', 'Pull&Bear', 'Bershka', 'Stradivarius', 'Topshop,Fashion Nova', 'Urban Outfitters', 'ASOS', 'Boohoo', 'PrettyLittleThing', 'Missguided'
-    , 'Cotton On', 'Old Navy', 'GAP', 'C&A', 'New Look', 'River Island', 'Next', 'Reserved', 'Monki', 'Weekday', '& Other Stories', 'Oysho', 'Massimo Dutti', 'LC Waikiki',
-    'Defacto', 'Giordano', 'Baleno', 'Metersbonwe', 'UR (Urban Revivo)', 'Sinsay', 'Lindex', 'Gina Tricot', 'Cubus', 'Terranova', 'Calliope', 'Splash', 'Max Fashion', 'Westside', 'Pantaloons'
-    , 'Reliance Trends', 'Shoppers Stop', 'Avra', 'NA-KD', 'Revolve' 'Other'
+    'Toyota', 'Honda', 'Ford', 'Tesla', 'BMW', 'Tata Motors', 'Mahindra', 'Hyundai',
+    
+    # Fast Fashion & High Street
+    'SHEIN', 'Forever 21', 'Primark', 'Mango', 'Pull&Bear', 'Bershka', 'Stradivarius', 'Topshop', 'Fashion Nova',
+    'Urban Outfitters', 'ASOS', 'Boohoo', 'PrettyLittleThing', 'Missguided', 'Cotton On', 'Old Navy', 'GAP',
+    'C&A', 'New Look', 'River Island', 'Next', 'Reserved', 'Monki', 'Weekday', '& Other Stories', 'Oysho',
+    'Massimo Dutti', 'LC Waikiki', 'Defacto', 'Giordano', 'Baleno', 'Metersbonwe', 'UR (Urban Revivo)', 'Sinsay',
+    'Lindex', 'Gina Tricot', 'Cubus', 'Terranova', 'Calliope', 'Splash', 'Max Fashion', 'Westside', 'Pantaloons',
+    'Reliance Trends', 'Shoppers Stop', 'Avra', 'NA-KD', 'Revolve', 'FabIndia', 'Biba', 'W for Woman', 'Manyavar',
+    
+    # Food & Consumables
+    'Whole Foods', 'Trader Joe\'s', 'Nestle', 'Coca-Cola', 'Pepsi', 'Danone', 'Beyond Meat', 'Impossible Foods',
+    'Amul', 'Britannia', 'Haldiram\'s', 'ITC', 'Mother Dairy', 'Tata Consumer', 'Organic India', '24 Mantra',
+    
+    # Eco & Specialized
+    'Local Thrift Store', 'Goodwill', 'Salvation Army', 'Depop', 'Poshmark', 'Etsy', 'eBay', 'ThredUp', 'Vinted',
+    'Back Market', 'Gazelle', 'Cashify', 'OLX', 'Quikr',
+    'Local Farm', 'Farmers Market', 'Small Business', 'Handmade', 'Generic', 'Zero Waste Store',
+    'Bambooee', 'Who Gives A Crap', 'Stasher', 'Swell', 'Hydro Flask', 'Klean Kanteen',
+    'Mamaearth', 'Forest Essentials', 'Kama Ayurveda', 'Khadi Natural', 'Bare Necessities',
+    'Other'
 ]
 
 # Simplified Multipliers for logic
 def get_product_multiplier(product_type: str) -> float:
     base_multipliers = {
-        'Fast Fashion': 2.5, 'Jeans': 3.2, 'Coat': 4.2, 'Shoes': 3.0,
-        'Electronics': 1.8, 'Smartphone': 2.5, 'Laptop': 3.0, 'Desktop Computer': 3.5,
-        'Meat': 1.5, 'Dairy Products': 0.6, 'Local Groceries': 0.3, 'Organic Vegetables': 0.2,
-        'Sofa': 4.0, 'Bed': 3.5, 'Appliance': 2.0,
-        'Cosmetics': 1.5, 'Perfume': 1.5,
-        'Books (New)': 0.5, 'Books (Used)': 0.05, 'E-book': 0.02,
-        'Bicycle': 5.0, 'Car Parts': 2.0,
-        'Second-Hand Item': 0.1, 'Thrifted Clothing': 0.08, 'Used Electronics': 0.15,
-        'Digital Download': 0.02, 'Service': 0.0
+        # High Impact
+        'Fast Fashion': 2.5, 'Jeans': 3.2, 'Coat': 4.2, 'Leather Goods': 3.5, 'Shoes': 3.0, 'Sneakers': 3.0,
+        'Electronics': 1.8, 'Smartphone': 2.5, 'Laptop': 3.0, 'Desktop Computer': 3.5, 'Gaming Console': 3.0, 'TV': 3.0,
+        'Meat': 1.5, 'Dairy Products': 0.6, 'Cheese': 1.0, 'Flight Ticket': 5.0, 'Car Parts': 2.0,
+        'Sofa': 4.0, 'Bed': 3.5, 'Appliance': 2.0, 'AC': 4.0,
+        
+        # Medium Impact
+        'Cotton Shirt': 1.5, 'T-Shirt': 1.5, 'Furniture': 1.5, 'Cosmetics': 1.5, 'Perfume': 1.5,
+        'Books (New)': 0.5, 'Paper': 0.5, 'Plastic Items': 2.0,
+
+        # Low Impact / Eco
+        'Local Groceries': 0.3, 'Organic Vegetables': 0.2, 'Bulk Grains': 0.2, 'Plant-Based Meat': 0.5,
+        'Bamboo Fabric': 0.8, 'Hemp Clothing': 0.6, 'Linen Shirt': 0.8, 'Organic Cotton': 0.8,
+        'Books (Used)': 0.05, 'E-book': 0.02, 'Audiobook': 0.02, 'Digital Download': 0.02,
+        'Bicycle': 5.0, # High manufacturing but offsets travel, kept high for purchase impact
+        'Used Electronics': 0.15, 'Refurbished Tech': 0.15, 'Refurbished Smartphone': 0.2,
+        'Second-Hand Item': 0.1, 'Thrifted Clothing': 0.08, 'Vintage Furniture': 0.1,
+        'Service': 0.0, 'Repair Service': 0.05, 'Rental Dress': 0.1,
+        'Solar Charger': 1.0, 'LED Bulb': 0.1
     }
+    
     if product_type in base_multipliers:
         return base_multipliers[product_type]
-    elif 'Used' in product_type or 'Second-Hand' in product_type or 'Thrift' in product_type:
+    elif 'Refurbished' in product_type or 'Used' in product_type or 'Second-Hand' in product_type or 'Thrift' in product_type:
+        return 0.1
+    elif 'Bamboo' in product_type or 'Hemp' in product_type or 'Organic' in product_type:
+        return 0.5
+    elif 'Rental' in product_type:
         return 0.1
     elif 'Leather' in product_type:
         return 3.5
@@ -216,7 +286,11 @@ def get_product_multiplier(product_type: str) -> float:
 ECO_FRIENDLY_CATEGORIES = [
     'Second-Hand Item', 'Local Groceries', 'Books (Used)', 'Thrifted Clothing',
     'Used Electronics', 'Vintage Furniture', 'Organic Vegetables', 'Organic Fruits',
-    'Refurbished Tech', 'Bicycle', 'Vegan Leather', 'Digital Download'
+    'Refurbished Tech', 'Bicycle', 'Vegan Leather', 'Digital Download',
+    'Refurbished Smartphone', 'Refurbished Laptop', 'Bamboo Fabric Clothing', 'Hemp Clothing',
+    'Plant-Based Meat', 'Oat Milk', 'Reclaimed Wood Table', 'Compostable Plates',
+    'Solar Charger', 'Repair Service', 'Rental Dress', 'Library Membership', 'Public Transit Pass',
+    'Ugly Produce', 'Bulk Grains'
 ]
 
 # ==================== BADGE SYSTEM ====================
@@ -261,16 +335,44 @@ def save_data(data: Dict) -> None:
     except Exception as e:
         st.error(f"Error saving data: {e}")
 
-# ==================== INITIALIZATION ====================
-if 'initialized' not in st.session_state:
-    data = load_data_cached()
-    st.session_state.purchases = data.get('purchases', [])
-    st.session_state.user_profile = data.get('user_profile', get_default_data()['user_profile'])
-    if 'badges' not in st.session_state.user_profile:
-        st.session_state.user_profile['badges'] = []
-    st.session_state.initialized = True
-
 # ==================== LOGIC FUNCTIONS ====================
+
+def suggest_eco_option(selected_product: str) -> Optional[str]:
+    """Returns a suggestion string based on the selected product."""
+    suggestions = {
+        'T-Shirt': "Consider **Organic Cotton**, **Hemp**, or **Thrifted** T-Shirts. They use up to 90% less water!",
+        'Jeans': "Did you know **Vintage Jeans** or **Hemp Denim** are way more durable and eco-friendly?",
+        'Dress': "How about a **Rental Dress** for that occasion? Or check a local **Thrift Store**.",
+        'Smartphone': "A **Refurbished Smartphone** saves ~50kg of CO₂ compared to a new one!",
+        'Laptop': "Check out **Refurbished Laptops** or upgrade your RAM instead of buying new.",
+        'Meat': "Try **Plant-Based Meat** or have a 'Meatless Monday' to slash your carbon footprint.",
+        'Dairy Products': "**Oat Milk** or **Soy Milk** have a much lower carbon footprint than dairy.",
+        'Furniture': "Look for **Vintage**, **Second-Hand**, or **FSC-Certified Wood** furniture.",
+        'Books (New)': "Try a **Library Membership**, **Used Books**, or **E-books** to save paper.",
+        'Bottled Water': "Switch to a **Reusable Bottle** and filtered tap water. Plastic is forever!",
+        'Fast Fashion': "Slow down! Try **Thrifted** or **High-Quality Ethical Brands** that last longer.",
+        'Toothbrush': "Switch to a **Bamboo Toothbrush** - plastic ones take 400 years to decompose.",
+        'Shampoo': "Try a **Solid Shampoo Bar** to eliminate plastic bottle waste.",
+        'Coffee': "Use a **Reusable Cup**. Disposable cups are lined with plastic and rarely recycled.",
+        'Gift Wrap': "Use **Old Newspapers** or **Fabric Wraps** (Furoshiki) instead of glossy paper."
+    }
+    
+    # Direct match
+    if selected_product in suggestions:
+        return suggestions[selected_product]
+    
+    # Category based matching
+    if 'Meat' in selected_product:
+        return suggestions['Meat']
+    if 'Phone' in selected_product or 'Mobile' in selected_product:
+        return suggestions['Smartphone']
+    if 'Laptop' in selected_product or 'Computer' in selected_product:
+        return suggestions['Laptop']
+    if 'Clothing' in selected_product or 'Wear' in selected_product or 'Jacket' in selected_product:
+        return suggestions['Fast Fashion']
+    
+    return None
+
 def check_badges():
     purchases = st.session_state.purchases
     my_badges = st.session_state.user_profile['badges']
@@ -323,6 +425,15 @@ def add_purchase(product_type: str, brand: str, price: float):
     })
     check_badges()
 
+# ==================== INITIALIZATION ====================
+if 'initialized' not in st.session_state:
+    data = load_data_cached()
+    st.session_state.purchases = data.get('purchases', [])
+    st.session_state.user_profile = data.get('user_profile', get_default_data()['user_profile'])
+    if 'badges' not in st.session_state.user_profile:
+        st.session_state.user_profile['badges'] = []
+    st.session_state.initialized = True
+
 # ==================== MAIN UI ====================
 
 # HEADER
@@ -351,8 +462,14 @@ with tab_dash:
         with st.container():
             st.markdown('<div class="stCard">', unsafe_allow_html=True)
             # Ensure unique key for form
-            with st.form("add_item_form_v2", clear_on_submit=True):
+            with st.form("add_item_form_v2", clear_on_submit=False):
                 product_type = st.selectbox("📦 What did you buy?", PRODUCT_TYPES)
+                
+                # --- DYNAMIC ECO SUGGESTION ---
+                suggestion = suggest_eco_option(product_type)
+                if suggestion:
+                    st.markdown(f'<div class="eco-suggestion">💡 {suggestion}</div>', unsafe_allow_html=True)
+                
                 brand = st.selectbox("🏷️ Brand", ALL_BRANDS)
                 
                 # CHANGED: Slider instead of number input
@@ -364,6 +481,7 @@ with tab_dash:
                     if price > 0:
                         add_purchase(product_type, brand, price)
                         st.success(f"Added {product_type}!")
+                        # Clear form workaround if needed, or rely on toast
                     else:
                         st.warning("Please set a price greater than 0.")
             st.markdown('</div>', unsafe_allow_html=True)
@@ -373,7 +491,9 @@ with tab_dash:
                 "Buying used saves ~80% CO₂ vs new!",
                 "Local produce = 5x less transport emissions.",
                 "Repair > Replace.",
-                "Combine deliveries to save fuel."
+                "Combine deliveries to save fuel.",
+                "Thrifting is the new cool.",
+                "Eating plant-based just one day a week makes a huge difference."
             ]
             st.info(random.choice(tips))
 
