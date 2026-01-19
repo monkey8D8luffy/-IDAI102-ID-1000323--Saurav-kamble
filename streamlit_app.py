@@ -30,7 +30,7 @@ st.markdown("""
     
     html, body, [class*="css"] {
         font-family: 'Nunito', sans-serif;
-        color: #000000 !important; /* FORCE BLACK TEXT */
+        color: #000000 !important;
     }
 
     .stApp {
@@ -43,13 +43,21 @@ st.markdown("""
         color: #000000 !important;
     }
     
-    /* Make input labels black */
+    /* --- INPUT FIELD FIXES (WHITE TEXT FOR DROPDOWNS) --- */
+    /* This overrides the black text rule specifically for selectbox/dropdown interactions */
+    .stSelectbox div[data-baseweb="select"] span {
+        color: white !important; /* Selected item text */
+    }
+    ul[data-baseweb="menu"] li span {
+        color: white !important; /* Dropdown options text */
+    }
+    /* Labels remain black */
     .stSelectbox label, .stNumberInput label, .stSlider label, .stTextInput label {
         color: #000000 !important;
         font-weight: bold;
     }
 
-    /* --- FALLING LEAF ANIMATION --- */
+    /* --- BACKGROUND AMBIENT ANIMATION --- */
     @keyframes dropAndDry {
         0% { transform: translateY(-10vh) rotate(0deg) translateX(0px); opacity: 0; filter: hue-rotate(0deg); }
         10% { opacity: 1; }
@@ -67,15 +75,48 @@ st.markdown("""
         pointer-events: none;
         z-index: 0;
     }
-    
     .leaf:nth-child(1) { left: 10%; animation-duration: 12s; animation-delay: 0s; }
     .leaf:nth-child(2) { left: 30%; animation-duration: 18s; animation-delay: 2s; font-size: 1.5rem; }
     .leaf:nth-child(3) { left: 70%; animation-duration: 14s; animation-delay: 5s; }
     .leaf:nth-child(4) { left: 90%; animation-duration: 20s; animation-delay: 1s; font-size: 2.5rem; }
 
+    /* --- NEW ACTION ANIMATIONS (TRIGGERED) --- */
+    
+    /* 1. Fast Falling Dry Leaves (Non-Eco) */
+    @keyframes fallFast {
+        0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+    
+    .dry-leaf-burst {
+        position: fixed;
+        top: -10vh;
+        font-size: 2.5rem;
+        color: #8D6E63 !important; /* Brown/Sepia color */
+        animation: fallFast 1s linear forwards;
+        pointer-events: none;
+        z-index: 9999;
+    }
+
+    /* 2. Fast Rising Green Leaves (Eco) */
+    @keyframes riseFast {
+        0% { transform: translateY(110vh) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(-10vh) rotate(-360deg); opacity: 0; }
+    }
+
+    .green-leaf-burst {
+        position: fixed;
+        bottom: -10vh;
+        font-size: 2.5rem;
+        color: #2e7d32 !important; /* Green color */
+        animation: riseFast 1s linear forwards;
+        pointer-events: none;
+        z-index: 9999;
+    }
+
     /* --- GLASSMORPHISM CARDS --- */
     div[data-testid="stMetric"], div[class*="stCard"] {
-        background: rgba(255, 255, 255, 0.85); /* Increased opacity for readability */
+        background: rgba(255, 255, 255, 0.85); 
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border-radius: 20px;
@@ -90,28 +131,13 @@ st.markdown("""
         box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
     }
     
-    /* --- METRIC TEXT COLOR --- */
-    [data-testid="stMetricValue"] {
-        color: #000000 !important;
-    }
-    [data-testid="stMetricLabel"] {
-        color: #333333 !important;
-    }
-
-    /* --- UI TRANSITIONS --- */
-    .element-container {
-        animation: fadeIn 0.8s ease-out;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+    [data-testid="stMetricValue"] { color: #000000 !important; }
+    [data-testid="stMetricLabel"] { color: #333333 !important; }
 
     /* --- BUTTONS --- */
     .stButton > button {
         background: linear-gradient(45deg, #43a047, #66bb6a);
-        color: white !important; /* Keep button text white */
+        color: white !important;
         border: none;
         border-radius: 15px;
         padding: 10px 25px;
@@ -119,7 +145,6 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(67, 160, 71, 0.3);
         transition: all 0.3s ease;
     }
-
     .stButton > button:hover {
         transform: scale(1.05);
         box-shadow: 0 6px 20px rgba(67, 160, 71, 0.5);
@@ -132,7 +157,6 @@ st.markdown("""
         border-radius: 15px;
         padding: 10px;
     }
-
     .stTabs [data-baseweb="tab"] {
         height: 50px;
         white-space: pre-wrap;
@@ -141,7 +165,6 @@ st.markdown("""
         color: #000000;
         font-weight: 800;
     }
-
     .stTabs [aria-selected="true"] {
         background-color: #fff;
         color: #2e7d32 !important;
@@ -156,7 +179,7 @@ st.markdown("""
         border-radius: 5px;
         margin-top: 10px;
         margin-bottom: 10px;
-        color: #1b5e20;
+        color: #1b5e20 !important;
     }
 </style>
 <div class="leaf">🍃</div>
@@ -261,7 +284,7 @@ def get_product_multiplier(product_type: str) -> float:
         'Local Groceries': 0.3, 'Organic Vegetables': 0.2, 'Bulk Grains': 0.2, 'Plant-Based Meat': 0.5,
         'Bamboo Fabric': 0.8, 'Hemp Clothing': 0.6, 'Linen Shirt': 0.8, 'Organic Cotton': 0.8,
         'Books (Used)': 0.05, 'E-book': 0.02, 'Audiobook': 0.02, 'Digital Download': 0.02,
-        'Bicycle': 5.0, # High manufacturing but offsets travel, kept high for purchase impact
+        'Bicycle': 5.0, 
         'Used Electronics': 0.15, 'Refurbished Tech': 0.15, 'Refurbished Smartphone': 0.2,
         'Second-Hand Item': 0.1, 'Thrifted Clothing': 0.08, 'Vintage Furniture': 0.1,
         'Service': 0.0, 'Repair Service': 0.05, 'Rental Dress': 0.1,
@@ -338,7 +361,6 @@ def save_data(data: Dict) -> None:
 # ==================== LOGIC FUNCTIONS ====================
 
 def suggest_eco_option(selected_product: str) -> Optional[str]:
-    """Returns a suggestion string based on the selected product."""
     suggestions = {
         'T-Shirt': "Consider **Organic Cotton**, **Hemp**, or **Thrifted** T-Shirts. They use up to 90% less water!",
         'Jeans': "Did you know **Vintage Jeans** or **Hemp Denim** are way more durable and eco-friendly?",
@@ -357,11 +379,9 @@ def suggest_eco_option(selected_product: str) -> Optional[str]:
         'Gift Wrap': "Use **Old Newspapers** or **Fabric Wraps** (Furoshiki) instead of glossy paper."
     }
     
-    # Direct match
     if selected_product in suggestions:
         return suggestions[selected_product]
     
-    # Category based matching
     if 'Meat' in selected_product:
         return suggestions['Meat']
     if 'Phone' in selected_product or 'Mobile' in selected_product:
@@ -372,6 +392,32 @@ def suggest_eco_option(selected_product: str) -> Optional[str]:
         return suggestions['Fast Fashion']
     
     return None
+
+def trigger_animation(is_eco: bool):
+    """Triggers a 1-second burst of leaves."""
+    leaves_html = ""
+    # Setup for Eco (Green Rising) vs Non-Eco (Dry Falling)
+    if is_eco:
+        css_class = "green-leaf-burst"
+        leaf_char = "🍃"
+    else:
+        css_class = "dry-leaf-burst"
+        leaf_char = "🍂"
+        
+    # Generate 25 leaves with random horizontal positions and slight delay staggering
+    for i in range(25):
+        left_pos = random.randint(5, 95)
+        delay = random.uniform(0, 0.5) # Stagger start times slightly
+        # Randomize size slightly
+        size = random.uniform(1.5, 3.0)
+        leaves_html += f"""
+        <div class="{css_class}" 
+             style="left: {left_pos}%; animation-delay: {delay}s; font-size: {size}rem;">
+             {leaf_char}
+        </div>
+        """
+    
+    st.markdown(leaves_html, unsafe_allow_html=True)
 
 def check_badges():
     purchases = st.session_state.purchases
@@ -398,8 +444,7 @@ def check_badges():
         st.session_state.user_profile['badges'].append(new_badge)
         badge_info = BADGES[new_badge]
         st.toast(f"🏆 BADGE UNLOCKED: {badge_info['name']}", icon=badge_info['icon'])
-        time.sleep(0.5)
-        st.balloons()
+        # REMOVED BALLOONS HERE as per request
         save_data({
             'purchases': st.session_state.purchases,
             'user_profile': st.session_state.user_profile
@@ -472,7 +517,6 @@ with tab_dash:
                 
                 brand = st.selectbox("🏷️ Brand", ALL_BRANDS)
                 
-                # CHANGED: Slider instead of number input
                 price = st.slider("💰 Price (₹)", min_value=0, max_value=50000, value=500, step=100)
                 
                 submitted = st.form_submit_button("Add to Tracker", type="primary", use_container_width=True)
@@ -481,7 +525,11 @@ with tab_dash:
                     if price > 0:
                         add_purchase(product_type, brand, price)
                         st.success(f"Added {product_type}!")
-                        # Clear form workaround if needed, or rely on toast
+                        
+                        # TRIGGER ANIMATION LOGIC
+                        is_eco_purchase = product_type in ECO_FRIENDLY_CATEGORIES
+                        trigger_animation(is_eco_purchase)
+                        
                     else:
                         st.warning("Please set a price greater than 0.")
             st.markdown('</div>', unsafe_allow_html=True)
