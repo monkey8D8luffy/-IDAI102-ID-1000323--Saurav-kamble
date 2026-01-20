@@ -149,7 +149,6 @@ st.markdown("""
         -webkit-backdrop-filter: blur(12px);
         border-radius: 20px;
         padding: 20px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
         border: 1px solid rgba(255, 255, 255, 0.4);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
@@ -663,7 +662,7 @@ with tab_analytics:
 
 # --- PROFILE TAB ---
 with tab_profile:
-    p_col1, p_col2 = st.columns([1, 2])
+    p_col1, p_col2 = st.columns([1, 1])
     
     with p_col1:
         st.markdown("### ⚙️ Settings")
