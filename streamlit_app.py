@@ -16,7 +16,7 @@ from typing import Dict, List, Optional
 
 # ==================== PAGE CONFIGURATION ====================
 st.set_page_config(
-    page_title="ShopImpact🍃",
+    page_title="ShopImpact",
     page_icon="🍃",
     layout="wide",
     initial_sidebar_state="expanded"
