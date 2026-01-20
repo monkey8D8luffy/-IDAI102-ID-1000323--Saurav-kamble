@@ -1,467 +1,476 @@
+"""
+ShopImpact - Ultimate Streamlit Edition
+Fully Optimized, Gamified, and Beautifully Animated.
+"""
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import random
+import time
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
-# ==================== CONFIGURATION & CONSTANTS ====================
+# ==================== PAGE CONFIGURATION ====================
 st.set_page_config(
-    page_title="EcoShop Dashboard",
-    page_icon="🌿",
+    page_title="ShopImpact 🍃",
+    page_icon="🍃",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Colors from the design
-COLORS = {
-    "primary": "#36e27b",        # The bright green
-    "primary_bg": "#eaffe5",     # Light green background for accents
-    "background": "#f6f8f7",     # Main app background
-    "surface": "#ffffff",        # Card background
-    "text_main": "#111714",      # Dark text
-    "text_sub": "#648772",       # Muted text
-    "border": "#dce5df"          # Border color
-}
+# ==================== ADVANCED CSS & ANIMATIONS ====================
+st.markdown("""
+<style>
+    /* --- GLOBAL THEME --- */
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Nunito', sans-serif;
+    }
 
-# Product Data Lists
+    .stApp {
+        background: linear-gradient(120deg, #e0f2f1 0%, #f1f8e9 50%, #fffde7 100%);
+        background-attachment: fixed;
+    }
+
+    /* --- TEXT VISIBILITY FIXES --- */
+    /* Force main text to black, but be specific to avoid breaking components */
+    h1, h2, h3, h4, h5, h6, p, label, .stMarkdown {
+        color: #000000 !important;
+    }
+    
+    /* --- DROPDOWN & INPUT FIXES (CRITICAL UPDATE) --- */
+    
+    /* 1. The Container for the Selected Item (The box you click) */
+    div[data-baseweb="select"] > div {
+        background-color: rgba(255, 255, 255, 0.9) !important;
+        border-color: rgba(0,0,0,0.2) !important;
+        color: #000000 !important;
+    }
+    
+    /* 2. The Text of the Selected Item */
+    div[data-baseweb="select"] span {
+        color: #000000 !important; 
+    }
+
+    /* 3. The Dropdown Menu (The list that pops up) */
+    ul[data-baseweb="menu"] {
+        background-color: #ffffff !important;
+        border: 1px solid #ccc !important;
+    }
+
+    /* 4. The Options inside the Menu */
+    ul[data-baseweb="menu"] li {
+        background-color: #ffffff !important;
+    }
+    
+    /* 5. Text inside the options */
+    ul[data-baseweb="menu"] li span {
+        color: #000000 !important;
+    }
+
+    /* 6. Hover/Selected State in Menu */
+    ul[data-baseweb="menu"] li[aria-selected="true"] {
+        background-color: #e8f5e9 !important; /* Light Green highlight */
+    }
+
+    /* Fix labels for inputs */
+    .stSelectbox label, .stNumberInput label, .stSlider label, .stTextInput label {
+        color: #000000 !important;
+        font-weight: 800;
+        font-size: 1rem;
+    }
+
+    /* --- BACKGROUND AMBIENT ANIMATION --- */
+    @keyframes dropAndDry {
+        0% { transform: translateY(-10vh) rotate(0deg) translateX(0px); opacity: 0; filter: hue-rotate(0deg); }
+        10% { opacity: 1; }
+        50% { filter: hue-rotate(0deg); } /* Green */
+        80% { filter: hue-rotate(90deg) sepia(1); } /* Dried/Brown */
+        100% { transform: translateY(110vh) rotate(720deg) translateX(50px); opacity: 0; filter: hue-rotate(90deg) sepia(1); }
+    }
+
+    .leaf {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        font-size: 2rem;
+        animation: dropAndDry 15s infinite linear;
+        pointer-events: none;
+        z-index: 0;
+    }
+    .leaf:nth-child(1) { left: 10%; animation-duration: 12s; animation-delay: 0s; }
+    .leaf:nth-child(2) { left: 30%; animation-duration: 18s; animation-delay: 2s; font-size: 1.5rem; }
+    .leaf:nth-child(3) { left: 70%; animation-duration: 14s; animation-delay: 5s; }
+    .leaf:nth-child(4) { left: 90%; animation-duration: 20s; animation-delay: 1s; font-size: 2.5rem; }
+
+    /* --- NEW ACTION ANIMATIONS (TRIGGERED) --- */
+    
+    /* 1. Fast Falling Dry Leaves (Non-Eco) */
+    @keyframes fallFast {
+        0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+    
+    .dry-leaf-burst {
+        position: fixed;
+        top: -10vh;
+        font-size: 2.5rem;
+        color: #8D6E63 !important; /* Brown/Sepia color */
+        animation: fallFast 1s linear forwards;
+        pointer-events: none;
+        z-index: 9999;
+    }
+
+    /* 2. Fast Rising Green Leaves (Eco) */
+    @keyframes riseFast {
+        0% { transform: translateY(110vh) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(-10vh) rotate(-360deg); opacity: 0; }
+    }
+
+    .green-leaf-burst {
+        position: fixed;
+        bottom: -10vh;
+        font-size: 2.5rem;
+        color: #2e7d32 !important; /* Green color */
+        animation: riseFast 1s linear forwards;
+        pointer-events: none;
+        z-index: 9999;
+    }
+
+    /* --- GLASSMORPHISM CARDS --- */
+    div[data-testid="stMetric"], div[class*="stCard"] {
+        background: rgba(255, 255, 255, 0.85); 
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    div[data-testid="stMetric"]:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
+    }
+    
+    [data-testid="stMetricValue"] { color: #000000 !important; }
+    [data-testid="stMetricLabel"] { color: #333333 !important; }
+
+    /* --- BUTTONS --- */
+    .stButton > button {
+        background: linear-gradient(45deg, #43a047, #66bb6a);
+        color: white !important;
+        border: none;
+        border-radius: 15px;
+        padding: 10px 25px;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(67, 160, 71, 0.3);
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(67, 160, 71, 0.5);
+    }
+    
+    /* --- TABS --- */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+        background-color: rgba(255,255,255,0.6);
+        border-radius: 15px;
+        padding: 10px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: transparent;
+        border-radius: 10px;
+        color: #000000;
+        font-weight: 800;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #fff;
+        color: #2e7d32 !important;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    /* Eco Suggestion Box */
+    .eco-suggestion {
+        background-color: #e8f5e9;
+        border-left: 5px solid #2e7d32;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        color: #1b5e20 !important;
+    }
+</style>
+<div class="leaf">🍃</div>
+<div class="leaf">🍂</div>
+<div class="leaf">🍃</div>
+<div class="leaf">🍂</div>
+""", unsafe_allow_html=True)
+
+# ==================== CONSTANTS ====================
 PRODUCT_TYPES = [
-    'Fast Fashion', 'T-Shirt', 'Jeans', 'Dress', 'Suit', 'Jacket', 'Sweater',
-    'Smartphone', 'Laptop', 'Tablet', 'Gaming Console', 'Smartwatch',
-    'Local Groceries', 'Organic Vegetables', 'Meat', 'Dairy Products', 'Coffee',
-    'Furniture', 'Home Decor', 'Bicycle', 'Public Transit Pass', 'Flight Ticket',
-    'Books (New)', 'Books (Used)', 'Thrifted Clothing', 'Refurbished Tech',
-    'Plant-Based Meat', 'Second-Hand Item'
+    # --- Fashion & Apparel ---
+    'Fast Fashion', 'T-Shirt', 'Jeans', 'Dress', 'Suit', 'Jacket', 'Sweater', 'Hoodie', 'Shorts', 'Skirt',
+    'Blazer', 'Coat', 'Pants', 'Leggings', 'Activewear', 'Swimwear', 'Underwear', 'Socks', 'Shoes', 'Sneakers',
+    'Cotton Shirt', 'Linen Shirt', 'Bamboo Fabric Clothing', 'Hemp Clothing', 'Recycled Polyester Gear',
+    'Upcycled Jacket', 'Vegan Leather Jacket', 'Organic Cotton T-Shirt', 'Rental Dress', 'Rental Tuxedo',
+    'Handloom Saree', 'Khadi Kurta', 'Ethical Wool Sweater', 'Silk Scarf (Ahimsa Silk)',
+    
+    # --- Electronics & Tech ---
+    'Electronics', 'Smartphone', 'Laptop', 'Tablet', 'Desktop Computer', 'Monitor', 'Keyboard', 'Mouse',
+    'Headphones', 'Gaming Console', 'Smartwatch', 'Camera', 'TV', 'Speaker', 'Drone',
+    'Refurbished Smartphone', 'Refurbished Laptop', 'Second-Hand Tablet', 'Used Camera Lens', 'Used Gaming Console',
+    'E-Reader', 'Solar Charger', 'Rechargeable Batteries', 'Smart Thermostat', 'LED Smart Bulb',
+    'Energy Efficient AC', 'Repair Service (Phone)', 'Repair Service (Laptop)',
+
+    # --- Food & Groceries ---
+    'Local Groceries', 'Organic Vegetables', 'Organic Fruits', 'Meat', 'Dairy Products', 'Snacks',
+    'Restaurant Meal', 'Fast Food', 'Coffee', 'Dessert',
+    'Plant-Based Meat', 'Oat Milk', 'Almond Milk', 'Soy Milk', 'Loose Leaf Tea', 'Fair Trade Coffee',
+    'Bulk Grains (No Plastic)', 'Ugly Produce (Imperfect Veg)', 'Locally Sourced Honey', 'Home-Grown Herbs',
+    'Compostable Coffee Pods', 'Tap Water (Filtered)', 'Bottled Water',
+
+    # --- Home & Living ---
+    'Home Decor', 'Sofa', 'Chair', 'Table', 'Bed', 'Mattress', 'Kitchenware', 'Appliance',
+    'Vintage Furniture', 'Bamboo Furniture', 'Reclaimed Wood Table', 'Cast Iron Skillet (Lifetime)',
+    'Glass Food Containers', 'Beeswax Wraps', 'Silicone Stasher Bags', 'Compostable Plates',
+    'Biodegradable Trash Bags', 'Loofah Sponge', 'Bamboo Toothbrush', 'Safety Razor', 'Menstrual Cup',
+    'Solid Shampoo Bar', 'Refillable Soap', 'Solar Garden Lights', 'Rainwater Harvesting Kit',
+
+    # --- Transport & Travel ---
+    'Car Parts', 'Tires', 'Car Accessories',
+    'Bicycle', 'E-Bike', 'Electric Scooter', 'Public Transit Pass', 'Train Ticket', 'Flight Ticket',
+    'EV Charging Session', 'Carpool Contribution', 'Walking Shoes',
+
+    # --- Books, Media & Hobbies ---
+    'Books (New)', 'Books (Used)', 'E-book', 'Vinyl Record', 'Video Game',
+    'Library Membership', 'Digital Magazine Subscription', 'Audiobook', 'Digital Game Download',
+    'Yoga Mat (Cork)', 'Gym Equipment', 'Sports Gear', 'Camping Gear', 'Used Sports Gear',
+    'Musical Instrument (Used)', 'Art Supplies (Non-Toxic)',
+
+    # --- Specialized & Eco ---
+    'Leather Goods', 'Vegan Leather',
+    'Second-Hand Item', 'Thrifted Clothing', 'Used Electronics', 'Refurbished Tech',
+    'Office Supplies', 'Stationery', 'Recycled Paper Notebook', 'Refillable Pen',
+    'Gift Card', 'Subscription', 'Event Ticket', 'Digital Download', 'Carbon Offset Credit', 'Tree Planting Donation',
+    '500+ (Other)'
 ]
 
 ALL_BRANDS = [
-    'Whole Foods', 'Shell', 'Local Market', 'Target', 'Zara', 'H&M', 'Nike', 
-    'Apple', 'Samsung', 'IKEA', 'Patagonia', 'The North Face', 'Beyond Meat',
-    'Thrift Store', 'Depop', 'Etsy', 'Generic', 'Other'
+    # Global Giants
+    'Zara', 'H&M', 'Nike', 'Adidas', 'Uniqlo', 'Gucci', 'Louis Vuitton', 'Patagonia', 'The North Face', 'Levi\'s',
+    'Apple', 'Samsung', 'Sony', 'Dell', 'HP', 'Lenovo', 'Asus', 'Microsoft', 'Google', 'Canon',
+    'IKEA', 'West Elm', 'Pottery Barn', 'Ashley Furniture', 'Wayfair',
+    'Sephora', 'L\'Oreal', 'Estee Lauder', 'Mac', 'Fenty Beauty', 'The Body Shop', 'Lush',
+    'Amazon', 'Barnes & Noble', 'Penguin Random House', 'Nintendo', 'PlayStation', 'Xbox',
+    'Toyota', 'Honda', 'Ford', 'Tesla', 'BMW', 'Tata Motors', 'Mahindra', 'Hyundai',
+    
+    # Fast Fashion & High Street
+    'SHEIN', 'Forever 21', 'Primark', 'Mango', 'Pull&Bear', 'Bershka', 'Stradivarius', 'Topshop', 'Fashion Nova',
+    'Urban Outfitters', 'ASOS', 'Boohoo', 'PrettyLittleThing', 'Missguided', 'Cotton On', 'Old Navy', 'GAP',
+    'C&A', 'New Look', 'River Island', 'Next', 'Reserved', 'Monki', 'Weekday', '& Other Stories', 'Oysho',
+    'Massimo Dutti', 'LC Waikiki', 'Defacto', 'Giordano', 'Baleno', 'Metersbonwe', 'UR (Urban Revivo)', 'Sinsay',
+    'Lindex', 'Gina Tricot', 'Cubus', 'Terranova', 'Calliope', 'Splash', 'Max Fashion', 'Westside', 'Pantaloons',
+    'Reliance Trends', 'Shoppers Stop', 'Avra', 'NA-KD', 'Revolve', 'FabIndia', 'Biba', 'W for Woman', 'Manyavar',
+    
+    # Food & Consumables
+    'Whole Foods', 'Trader Joe\'s', 'Nestle', 'Coca-Cola', 'Pepsi', 'Danone', 'Beyond Meat', 'Impossible Foods',
+    'Amul', 'Britannia', 'Haldiram\'s', 'ITC', 'Mother Dairy', 'Tata Consumer', 'Organic India', '24 Mantra',
+    
+    # Eco & Specialized
+    'Local Thrift Store', 'Goodwill', 'Salvation Army', 'Depop', 'Poshmark', 'Etsy', 'eBay', 'ThredUp', 'Vinted',
+    'Back Market', 'Gazelle', 'Cashify', 'OLX', 'Quikr',
+    'Local Farm', 'Farmers Market', 'Small Business', 'Handmade', 'Generic', 'Zero Waste Store',
+    'Bambooee', 'Who Gives A Crap', 'Stasher', 'Swell', 'Hydro Flask', 'Klean Kanteen',
+    'Mamaearth', 'Forest Essentials', 'Kama Ayurveda', 'Khadi Natural', 'Bare Necessities',
+    'Other'
 ]
+
+# Simplified Multipliers for logic
+def get_product_multiplier(product_type: str) -> float:
+    base_multipliers = {
+        # High Impact
+        'Fast Fashion': 2.5, 'Jeans': 3.2, 'Coat': 4.2, 'Leather Goods': 3.5, 'Shoes': 3.0, 'Sneakers': 3.0,
+        'Electronics': 1.8, 'Smartphone': 2.5, 'Laptop': 3.0, 'Desktop Computer': 3.5, 'Gaming Console': 3.0, 'TV': 3.0,
+        'Meat': 1.5, 'Dairy Products': 0.6, 'Cheese': 1.0, 'Flight Ticket': 5.0, 'Car Parts': 2.0,
+        'Sofa': 4.0, 'Bed': 3.5, 'Appliance': 2.0, 'AC': 4.0,
+        
+        # Medium Impact
+        'Cotton Shirt': 1.5, 'T-Shirt': 1.5, 'Furniture': 1.5, 'Cosmetics': 1.5, 'Perfume': 1.5,
+        'Books (New)': 0.5, 'Paper': 0.5, 'Plastic Items': 2.0,
+
+        # Low Impact / Eco
+        'Local Groceries': 0.3, 'Organic Vegetables': 0.2, 'Bulk Grains': 0.2, 'Plant-Based Meat': 0.5,
+        'Bamboo Fabric': 0.8, 'Hemp Clothing': 0.6, 'Linen Shirt': 0.8, 'Organic Cotton': 0.8,
+        'Books (Used)': 0.05, 'E-book': 0.02, 'Audiobook': 0.02, 'Digital Download': 0.02,
+        'Bicycle': 5.0, 
+        'Used Electronics': 0.15, 'Refurbished Tech': 0.15, 'Refurbished Smartphone': 0.2,
+        'Second-Hand Item': 0.1, 'Thrifted Clothing': 0.08, 'Vintage Furniture': 0.1,
+        'Service': 0.0, 'Repair Service': 0.05, 'Rental Dress': 0.1,
+        'Solar Charger': 1.0, 'LED Bulb': 0.1
+    }
+    
+    if product_type in base_multipliers:
+        return base_multipliers[product_type]
+    elif 'Refurbished' in product_type or 'Used' in product_type or 'Second-Hand' in product_type or 'Thrift' in product_type:
+        return 0.1
+    elif 'Bamboo' in product_type or 'Hemp' in product_type or 'Organic' in product_type:
+        return 0.5
+    elif 'Rental' in product_type:
+        return 0.1
+    elif 'Leather' in product_type:
+        return 3.5
+    elif 'Plastic' in product_type:
+        return 2.0
+    else:
+        return 1.0
 
 ECO_FRIENDLY_CATEGORIES = [
     'Second-Hand Item', 'Local Groceries', 'Books (Used)', 'Thrifted Clothing',
-    'Used Electronics', 'Organic Vegetables', 'Refurbished Tech', 'Bicycle', 
-    'Plant-Based Meat', 'Public Transit Pass'
+    'Used Electronics', 'Vintage Furniture', 'Organic Vegetables', 'Organic Fruits',
+    'Refurbished Tech', 'Bicycle', 'Vegan Leather', 'Digital Download',
+    'Refurbished Smartphone', 'Refurbished Laptop', 'Bamboo Fabric Clothing', 'Hemp Clothing',
+    'Plant-Based Meat', 'Oat Milk', 'Reclaimed Wood Table', 'Compostable Plates',
+    'Solar Charger', 'Repair Service', 'Rental Dress', 'Library Membership', 'Public Transit Pass',
+    'Ugly Produce', 'Bulk Grains'
 ]
 
+# ==================== BADGE SYSTEM ====================
 BADGES = {
-    'first_step': {'name': 'First Step', 'desc': 'Logged first purchase', 'icon': '🌱'},
-    'eco_warrior': {'name': 'Eco Warrior', 'desc': 'Maintained < 50kg CO₂', 'icon': '🛡️'},
-    'thrift_king': {'name': 'Thrift King', 'desc': 'Bought 3 used items', 'icon': '👑'}
+    'first_step': {'name': '🌱 First Step', 'desc': 'Logged your first purchase', 'icon': '🌱'},
+    'thrift_king': {'name': '👑 Thrift King', 'desc': 'Bought 3 second-hand items', 'icon': '👑'},
+    'low_carbon': {'name': '🍃 Low Carbon', 'desc': 'Logged an item with < 1kg CO₂', 'icon': '🍃'},
+    'big_saver': {'name': '💰 Big Saver', 'desc': 'Spent over ₹10,000 in one go', 'icon': '💰'},
+    'eco_warrior': {'name': '🛡️ Eco Warrior', 'desc': 'Maintained < 50kg CO₂ total', 'icon': '🛡️'},
+    'consistent': {'name': '📅 Consistent', 'desc': 'Logged 5 items total', 'icon': '📅'}
 }
 
-DATA_FILE = Path("ecoshop_data.json")
-
-# ==================== DATA LOGIC ====================
+# ==================== DATA MANAGEMENT ====================
+DATA_FILE = Path("shopimpact_data_v3.json")
 
 def get_default_data() -> Dict:
     return {
         'purchases': [],
         'user_profile': {
-            'name': 'Jane Doe',
-            'level': 'Eco Warrior Lvl 5',
+            'name': 'Friend',
+            'monthlyBudget': 15000,
+            'co2Goal': 50,
             'badges': []
         }
     }
 
-def load_data() -> Dict:
+@st.cache_data
+def load_data_cached() -> Dict:
     if DATA_FILE.exists():
         try:
             with open(DATA_FILE, 'r') as f:
                 return json.load(f)
-        except:
+        except Exception:
             return get_default_data()
     return get_default_data()
 
 def save_data(data: Dict) -> None:
-    with open(DATA_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
+    try:
+        with open(DATA_FILE, 'w') as f:
+            json.dump(data, f, indent=2)
+        load_data_cached.clear()
+    except Exception as e:
+        st.error(f"Error saving data: {e}")
 
-def get_product_multiplier(product_type: str) -> float:
-    # Simplified logic for demo
-    if product_type in ECO_FRIENDLY_CATEGORIES: return 0.1
-    if 'Meat' in product_type or 'Flight' in product_type: return 3.5
-    if 'Fashion' in product_type or 'Jeans' in product_type: return 2.5
-    if 'Electronics' in product_type: return 1.8
-    return 1.0
+# ==================== LOGIC FUNCTIONS ====================
 
 def suggest_eco_option(selected_product: str) -> Optional[str]:
     suggestions = {
-        'T-Shirt': "Try **Organic Cotton** or **Thrifted** options.",
-        'Meat': "Try **Plant-Based Meat** to save CO₂.",
-        'Smartphone': "A **Refurbished Phone** saves ~50kg CO₂.",
-        'Fast Fashion': "Consider **Ethical Brands** or **Second-Hand**."
+        'T-Shirt': "Consider **Organic Cotton**, **Hemp**, or **Thrifted** T-Shirts. They use up to 90% less water!",
+        'Jeans': "Did you know **Vintage Jeans** or **Hemp Denim** are way more durable and eco-friendly?",
+        'Dress': "How about a **Rental Dress** for that occasion? Or check a local **Thrift Store**.",
+        'Smartphone': "A **Refurbished Smartphone** saves ~50kg of CO₂ compared to a new one!",
+        'Laptop': "Check out **Refurbished Laptops** or upgrade your RAM instead of buying new.",
+        'Meat': "Try **Plant-Based Meat** or have a 'Meatless Monday' to slash your carbon footprint.",
+        'Dairy Products': "**Oat Milk** or **Soy Milk** have a much lower carbon footprint than dairy.",
+        'Furniture': "Look for **Vintage**, **Second-Hand**, or **FSC-Certified Wood** furniture.",
+        'Books (New)': "Try a **Library Membership**, **Used Books**, or **E-books** to save paper.",
+        'Bottled Water': "Switch to a **Reusable Bottle** and filtered tap water. Plastic is forever!",
+        'Fast Fashion': "Slow down! Try **Thrifted** or **High-Quality Ethical Brands** that last longer.",
+        'Toothbrush': "Switch to a **Bamboo Toothbrush** - plastic ones take 400 years to decompose.",
+        'Shampoo': "Try a **Solid Shampoo Bar** to eliminate plastic bottle waste.",
+        'Coffee': "Use a **Reusable Cup**. Disposable cups are lined with plastic and rarely recycled.",
+        'Gift Wrap': "Use **Old Newspapers** or **Fabric Wraps** (Furoshiki) instead of glossy paper."
     }
-    return suggestions.get(selected_product)
+    
+    if selected_product in suggestions:
+        return suggestions[selected_product]
+    
+    if 'Meat' in selected_product:
+        return suggestions['Meat']
+    if 'Phone' in selected_product or 'Mobile' in selected_product:
+        return suggestions['Smartphone']
+    if 'Laptop' in selected_product or 'Computer' in selected_product:
+        return suggestions['Laptop']
+    if 'Clothing' in selected_product or 'Wear' in selected_product or 'Jacket' in selected_product:
+        return suggestions['Fast Fashion']
+    
+    return None
 
-def add_purchase_logic(product_type, brand, price):
-    multiplier = get_product_multiplier(product_type)
-    co2 = (price * multiplier) / 100
-    
-    new_item = {
-        'date': datetime.now().strftime('%Y-%m-%d %H:%M'),
-        'type': product_type,
-        'brand': brand,
-        'price': float(price),
-        'co2_impact': float(co2)
-    }
-    st.session_state.data['purchases'].append(new_item)
-    save_data(st.session_state.data)
-    
-    # Badge Logic Check (Simplified)
-    badges = st.session_state.data['user_profile']['badges']
-    if 'first_step' not in badges:
-        badges.append('first_step')
-        st.toast("🏆 Badge Unlocked: First Step!", icon='🌱')
-    
-    return True
-
-# Initialize Session State
-if 'data' not in st.session_state:
-    st.session_state.data = load_data()
-if 'page' not in st.session_state:
-    st.session_state.page = "Dashboard"
-
-# ==================== CSS STYLING (Manrope & UI Overrides) ====================
-st.markdown(f"""
-<style>
-    /* Import Manrope Font */
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
-
-    /* General App Styling */
-    .stApp {{
-        background-color: {COLORS['background']};
-        font-family: 'Manrope', sans-serif;
-        color: {COLORS['text_main']};
-    }}
-    
-    /* Remove top header padding */
-    .block-container {{
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }}
-
-    /* Sidebar Styling */
-    section[data-testid="stSidebar"] {{
-        background-color: {COLORS['surface']};
-        border-right: 1px solid {COLORS['border']};
-    }}
-    
-    /* Custom Card Styling */
-    .custom-card {{
-        background-color: {COLORS['surface']};
-        padding: 24px;
-        border-radius: 16px;
-        border: 1px solid {COLORS['border']};
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        height: 100%;
-    }}
-    
-    /* Metric styling inside cards */
-    .metric-label {{
-        color: {COLORS['text_sub']};
-        font-size: 0.85rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }}
-    
-    .metric-value {{
-        color: {COLORS['text_main']};
-        font-size: 2rem;
-        font-weight: 800;
-        margin-top: 8px;
-    }}
-    
-    .metric-delta {{
-        font-size: 0.85rem;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 6px;
-        display: inline-flex;
-        align-items: center;
-    }}
-    
-    .delta-pos {{ background-color: {COLORS['primary_bg']}; color: #2e7d32; }}
-    .delta-neg {{ background-color: #fee2e2; color: #ef4444; }}
-
-    /* Custom Button Styling */
-    .stButton > button {{
-        background-color: {COLORS['primary']};
-        color: #112117;
-        font-weight: 700;
-        border: none;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
-        transition: all 0.2s;
-    }}
-    .stButton > button:hover {{
-        background-color: #32d673;
-        box-shadow: 0 4px 12px rgba(54, 226, 123, 0.3);
-        transform: translateY(-1px);
-    }}
-    
-    /* Secondary Button Styling */
-    .secondary-btn > button {{
-        background-color: transparent;
-        border: 1px solid {COLORS['border']};
-        color: {COLORS['text_main']};
-    }}
-
-    /* Inputs */
-    div[data-baseweb="select"] > div, div[data-baseweb="input"] > div {{
-        background-color: {COLORS['surface']};
-        border-radius: 8px;
-        border-color: {COLORS['border']};
-    }}
-
-    /* Navigation Menu in Sidebar */
-    .nav-item {{
-        display: flex;
-        align-items: center;
-        padding: 12px 16px;
-        margin-bottom: 4px;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        text-decoration: none;
-        color: {COLORS['text_sub']};
-        font-weight: 500;
-    }}
-    .nav-item:hover {{
-        background-color: {COLORS['background']};
-        color: {COLORS['text_main']};
-    }}
-    .nav-active {{
-        background-color: {COLORS['primary_bg']};
-        color: #1a4d2e; /* Darker green for text */
-        font-weight: 700;
-    }}
-    
-</style>
-""", unsafe_allow_html=True)
-
-# ==================== SIDEBAR ====================
-with st.sidebar:
-    # Logo
-    st.markdown(f"""
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 30px; padding: 0 10px;">
-            <div style="width: 40px; height: 40px; background: {COLORS['primary']}; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
-                🌿
-            </div>
-            <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: {COLORS['text_main']};">EcoShop</h1>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # Navigation (Using radio to control state, but styled via CSS if needed, standard radio is cleaner for Streamlit)
-    nav_selection = st.radio(
-        "Navigation", 
-        ["Dashboard", "Transactions", "Impact Report", "Settings"], 
-        label_visibility="collapsed"
-    )
-    st.session_state.page = nav_selection
-
-    st.markdown("---")
-    
-    # User Profile at Bottom
-    user = st.session_state.data['user_profile']
-    st.markdown(f"""
-        <div style="display: flex; align-items: center; gap: 12px; padding: 10px; margin-top: auto;">
-            <div style="width: 40px; height: 40px; background-color: #eee; border-radius: 50%; background-image: url('https://api.dicebear.com/7.x/avataaars/svg?seed={user['name']}'); background-size: cover;"></div>
-            <div>
-                <div style="font-weight: 700; font-size: 14px; color: {COLORS['text_main']}">{user['name']}</div>
-                <div style="font-size: 12px; color: {COLORS['text_sub']}">{user['level']}</div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-# ==================== MAIN DASHBOARD ====================
-
-if st.session_state.page == "Dashboard":
-    
-    # --- HEADER ---
-    col_head_1, col_head_2 = st.columns([3, 1])
-    with col_head_1:
-        st.markdown(f"""
-            <h1 style="font-weight: 800; font-size: 2.5rem; margin-bottom: 0;">Dashboard</h1>
-            <p style="color: {COLORS['text_sub']}; font-weight: 500; margin-top: 5px;">Track your sustainable journey and carbon footprint</p>
-        """, unsafe_allow_html=True)
-    
-    with col_head_2:
-        # We use an expander to act as the "New Entry" modal
-        with st.expander("➕ New Entry", expanded=False):
-            with st.form("new_entry_form"):
-                p_type = st.selectbox("Product", PRODUCT_TYPES)
-                
-                # Dynamic Suggestion
-                sugg = suggest_eco_option(p_type)
-                if sugg:
-                    st.info(sugg)
-                    
-                p_brand = st.selectbox("Brand", ALL_BRANDS)
-                p_price = st.number_input("Price ($)", min_value=0.0, value=20.0, step=5.0)
-                
-                if st.form_submit_button("Add Transaction"):
-                    add_purchase_logic(p_type, p_brand, p_price)
-                    st.rerun()
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # --- CALCULATE STATS ---
-    df = pd.DataFrame(st.session_state.data['purchases'])
-    
-    total_spent = 0
-    total_co2 = 0
-    eco_rate = 0
-    
-    if not df.empty:
-        total_spent = df['price'].sum()
-        total_co2 = df['co2_impact'].sum()
-        eco_count = df[df['type'].isin(ECO_FRIENDLY_CATEGORIES)].shape[0]
-        eco_rate = int((eco_count / len(df)) * 100)
-    
-    # --- METRICS ROW (CUSTOM CARDS) ---
-    c1, c2, c3 = st.columns(3)
-    
-    def render_metric_card(icon, label, value, delta, is_good_delta=True):
-        delta_class = "delta-pos" if is_good_delta else "delta-neg"
-        delta_icon = "↗" if is_good_delta else "↘"
-        return f"""
-        <div class="custom-card">
-            <div class="metric-label">
-                <span style="font-size: 1.2rem;">{icon}</span> {label}
-            </div>
-            <div style="display: flex; align-items: baseline; gap: 10px;">
-                <div class="metric-value">{value}</div>
-                <div class="metric-delta {delta_class}">
-                    {delta_icon} {delta}
-                </div>
-            </div>
-            <div style="font-size: 0.75rem; color: #9ca3af; margin-top: 5px;">Vs. last month</div>
+def trigger_animation(is_eco: bool):
+    """Triggers a 1-second burst of leaves."""
+    leaves_html = ""
+    # Setup for Eco (Green Rising) vs Non-Eco (Dry Falling)
+    if is_eco:
+        css_class = "green-leaf-burst"
+        leaf_char = "🍃"
+    else:
+        css_class = "dry-leaf-burst"
+        leaf_char = "🍂"
+        
+    # Generate 25 leaves with random horizontal positions and slight delay staggering
+    for i in range(25):
+        left_pos = random.randint(5, 95)
+        delay = random.uniform(0, 0.5) # Stagger start times slightly
+        # Randomize size slightly
+        size = random.uniform(1.5, 3.0)
+        leaves_html += f"""
+        <div class="{css_class}" 
+             style="left: {left_pos}%; animation-delay: {delay}s; font-size: {size}rem;">
+             {leaf_char}
         </div>
         """
+    
+    st.markdown(leaves_html, unsafe_allow_html=True)
 
-    with c1:
-        st.markdown(render_metric_card("💳", "Total Spent", f"${total_spent:,.2f}", "5%", False), unsafe_allow_html=True)
-    with c2:
-        st.markdown(render_metric_card("☁️", "Total CO2", f"{total_co2:.1f}kg", "12%", False), unsafe_allow_html=True)
-    with c3:
-        st.markdown(render_metric_card("♻️", "Eco Choices Rate", f"{eco_rate}%", "8%", True), unsafe_allow_html=True)
+def check_badges():
+    purchases = st.session_state.purchases
+    my_badges = st.session_state.user_profile['badges']
+    new_badge = None
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # --- MAIN SPLIT (ACTIVITY & CHART) ---
-    col_activity, col_chart = st.columns([1, 2], gap="large")
-
-    # --- LEFT COLUMN: RECENT ACTIVITY ---
-    with col_activity:
-        st.markdown(f'<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3 style="margin:0; font-weight:700;">Recent Activity</h3><a href="#" style="color:{COLORS["primary"]}; text-decoration:none; font-size:0.9rem;">View All</a></div>', unsafe_allow_html=True)
+    if len(purchases) >= 1 and 'first_step' not in my_badges:
+        new_badge = 'first_step'
+    
+    thrift_count = sum(1 for p in purchases if p['type'] in ECO_FRIENDLY_CATEGORIES)
+    if thrift_count >= 3 and 'thrift_king' not in my_badges:
+        new_badge = 'thrift_king'
         
-        st.markdown(f'<div class="custom-card" style="padding: 0; overflow: hidden;">', unsafe_allow_html=True)
+    if purchases and purchases[-1]['co2_impact'] < 1.0 and 'low_carbon' not in my_badges:
+        new_badge = 'low_carbon'
         
-        if df.empty:
-            st.markdown('<div style="padding:20px; text-align:center; color:#888;">No purchases yet.</div>', unsafe_allow_html=True)
-        else:
-            # Sort by recent
-            recent_df = df.iloc[::-1].head(5)
-            
-            for index, row in recent_df.iterrows():
-                is_eco = row['type'] in ECO_FRIENDLY_CATEGORIES
-                icon = "nutrition" if "Food" in row['type'] or "Groceries" in row['type'] else "shopping_bag"
-                icon_bg = "#eaffe5" if is_eco else "#f3f4f6"
-                icon_color = "#2e7d32" if is_eco else "#4b5563"
-                dot_color = "#36e27b" if is_eco else "#d1d5db"
-                
-                st.markdown(f"""
-                <div style="display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid {COLORS['border']};">
-                    <div style="width: 48px; height: 48px; border-radius: 12px; background: {icon_bg}; display: flex; align-items: center; justify-content: center; color: {icon_color}; margin-right: 16px;">
-                        <span style="font-size: 24px;" class="material-symbols-outlined">{icon}</span>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 700; color: {COLORS['text_main']}; font-size: 1rem;">{row['brand']}</div>
-                        <div style="font-size: 0.75rem; color: {COLORS['text_sub']}; font-weight: 500;">{row['date']}</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-weight: 700; color: {COLORS['text_main']}; font-size: 1rem;">-${row['price']:.2f}</div>
-                        <div style="width: 8px; height: 8px; background: {dot_color}; border-radius: 50%; display: inline-block; margin-top: 4px;"></div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+    if purchases and purchases[-1]['price'] > 10000 and 'big_saver' not in my_badges:
+        new_badge = 'big_saver'
+
+    if len(purchases) >= 5 and 'consistent' not in my_badges:
+        new_badge = 'consistent'
+
+    if new_badge:
+        st.session_state.user_profile['badges'].append(new_badge)
+        badge_info = BADGES[new_badge]
+        st.toast(f"🏆 BADGE UNLOCKED: {badge_info['name']}", icon=badge_info['icon'])
+        # REMOVED BALLOONS HERE as per request
+        save_data({
         
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # --- RIGHT COLUMN: LIVE IMPACT CHART ---
-    with col_chart:
-        st.markdown(f'<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3 style="margin:0; font-weight:700;">Live Impact Overview</h3></div>', unsafe_allow_html=True)
-        
-        with st.container():
-            st.markdown(f'<div class="custom-card">', unsafe_allow_html=True)
-            
-            if not df.empty:
-                # Prepare data for chart
-                # Grouping by mock days for visual similarity to design
-                chart_data = df.reset_index()
-                
-                # Create Plotly Chart matching the design style
-                fig = go.Figure()
-
-                # 1. Spending Line (Grey Dashed)
-                fig.add_trace(go.Scatter(
-                    x=chart_data.index, 
-                    y=chart_data['price'],
-                    mode='lines',
-                    name='Spending',
-                    line=dict(color='#9ca3af', width=2, dash='dash'),
-                    hoverinfo='y'
-                ))
-
-                # 2. CO2 Line (Green Filled)
-                fig.add_trace(go.Scatter(
-                    x=chart_data.index, 
-                    y=chart_data['co2_impact'],
-                    mode='lines+markers',
-                    name='CO2 Impact',
-                    line=dict(color=COLORS['primary'], width=3),
-                    marker=dict(size=8, color=COLORS['primary'], line=dict(width=2, color='white')),
-                    fill='tozeroy', # Fill area below
-                    fillcolor='rgba(54, 226, 123, 0.1)' # Transparent green
-                ))
-
-                # Layout customization to match design (Minimalist)
-                fig.update_layout(
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    margin=dict(l=0, r=0, t=10, b=0),
-                    height=350,
-                    showlegend=True,
-                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                    xaxis=dict(showgrid=False, showline=False, showticklabels=True, tickfont=dict(color=COLORS['text_sub'])),
-                    yaxis=dict(showgrid=True, gridcolor='#f3f4f6', showline=False, zeroline=False, tickfont=dict(color=COLORS['text_sub']))
-                )
-                
-                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
-            else:
-                st.info("Add some data to see the chart!")
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-
-# ==================== OTHER PAGES (Placeholder) ====================
-elif st.session_state.page == "Settings":
-    st.title("Settings")
-    st.write("Profile configuration goes here.")
-    if st.button("Reset Data"):
-        save_data(get_default_data())
-        st.session_state.data = get_default_data()
-        st.rerun()
-
-else:
-    st.title(st.session_state.page)
-    st.write("Feature coming soon.")
