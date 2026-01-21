@@ -38,79 +38,130 @@ st.markdown("""
     }
 
     /* --- TEXT VISIBILITY FIXES --- */
+    /* Force main text to black, but be specific to avoid breaking components */
     h1, h2, h3, h4, h5, h6, p, label, .stMarkdown {
         color: #000000 !important;
     }
     
-    /* --- DROPDOWN & INPUT FIXES --- */
+    /* --- DROPDOWN & INPUT FIXES (CRITICAL UPDATE) --- */
+    
+    /* 1. The Container for the Selected Item (The box you click) */
     div[data-baseweb="select"] > div {
         background-color: rgba(255, 255, 255, 0.9) !important;
         border-color: rgba(0,0,0,0.2) !important;
         color: #000000 !important;
     }
+    
+    /* 2. The Text of the Selected Item */
     div[data-baseweb="select"] span {
         color: #000000 !important; 
     }
+
+    /* 3. The Dropdown Menu (The list that pops up) */
     ul[data-baseweb="menu"] {
         background-color: #ffffff !important;
         border: 1px solid #ccc !important;
     }
+
+    /* 4. The Options inside the Menu */
     ul[data-baseweb="menu"] li {
         background-color: #ffffff !important;
     }
+    
+    /* 5. Text inside the options */
     ul[data-baseweb="menu"] li span {
         color: #000000 !important;
     }
+
+    /* 6. Hover/Selected State in Menu */
     ul[data-baseweb="menu"] li[aria-selected="true"] {
-        background-color: #e8f5e9 !important; 
+        background-color: #e8f5e9 !important; /* Light Green highlight */
     }
+
+    /* Fix labels for inputs */
     .stSelectbox label, .stNumberInput label, .stSlider label, .stTextInput label {
         color: #000000 !important;
         font-weight: 800;
         font-size: 1rem;
     }
 
-    /* --- DASHBOARD METRIC CARDS (NEW STYLE) --- */
-    .metric-card {
-        background-color: white;
-        border-radius: 15px;
-        padding: 15px;
-        text-align: center;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        transition: transform 0.2s;
-        height: 100%;
+    /* --- BACKGROUND AMBIENT ANIMATION --- */
+    @keyframes dropAndDry {
+        0% { transform: translateY(-10vh) rotate(0deg) translateX(0px); opacity: 0; filter: hue-rotate(0deg); }
+        10% { opacity: 1; }
+        50% { filter: hue-rotate(0deg); } /* Green */
+        80% { filter: hue-rotate(90deg) sepia(1); } /* Dried/Brown */
+        100% { transform: translateY(110vh) rotate(720deg) translateX(50px); opacity: 0; filter: hue-rotate(90deg) sepia(1); }
     }
-    .metric-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-    }
-    .metric-icon {
+
+    .leaf {
+        position: fixed;
+        top: 0;
+        left: 50%;
         font-size: 2rem;
-        margin-bottom: 5px;
-        display: block;
+        animation: dropAndDry 15s infinite linear;
+        pointer-events: none;
+        z-index: 0;
     }
-    .metric-value {
-        font-size: 1.2rem;
-        font-weight: 800;
-        color: #2e7d32;
-        display: block;
+    .leaf:nth-child(1) { left: 10%; animation-duration: 12s; animation-delay: 0s; }
+    .leaf:nth-child(2) { left: 30%; animation-duration: 18s; animation-delay: 2s; font-size: 1.5rem; }
+    .leaf:nth-child(3) { left: 70%; animation-duration: 14s; animation-delay: 5s; }
+    .leaf:nth-child(4) { left: 90%; animation-duration: 20s; animation-delay: 1s; font-size: 2.5rem; }
+
+    /* --- NEW ACTION ANIMATIONS (TRIGGERED) --- */
+    
+    /* 1. Fast Falling Dry Leaves (Non-Eco) */
+    @keyframes fallFast {
+        0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
     }
-    .metric-label {
-        font-size: 0.8rem;
-        color: #666;
-        display: block;
+    
+    .dry-leaf-burst {
+        position: fixed;
+        top: -10vh;
+        font-size: 2.5rem;
+        color: #8D6E63 !important; /* Brown/Sepia color */
+        animation: fallFast 1s linear forwards;
+        pointer-events: none;
+        z-index: 9999;
+    }
+
+    /* 2. Fast Rising Green Leaves (Eco) */
+    @keyframes riseFast {
+        0% { transform: translateY(110vh) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(-10vh) rotate(-360deg); opacity: 0; }
+    }
+
+    .green-leaf-burst {
+        position: fixed;
+        bottom: -10vh;
+        font-size: 2.5rem;
+        color: #2e7d32 !important; /* Green color */
+        animation: riseFast 1s linear forwards;
+        pointer-events: none;
+        z-index: 9999;
     }
 
     /* --- GLASSMORPHISM CARDS --- */
     div[data-testid="stMetric"], div[class*="stCard"] {
-        background: rgba(255, 255, 255, 0.9); 
+        background: rgba(255, 255, 255, 0.85); 
         backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border-radius: 20px;
         padding: 20px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
         border: 1px solid rgba(255, 255, 255, 0.4);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    div[data-testid="stMetric"]:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
     }
     
+    [data-testid="stMetricValue"] { color: #000000 !important; }
+    [data-testid="stMetricLabel"] { color: #333333 !important; }
+
     /* --- BUTTONS --- */
     .stButton > button {
         background: linear-gradient(45deg, #43a047, #66bb6a);
@@ -120,6 +171,11 @@ st.markdown("""
         padding: 10px 25px;
         font-weight: 700;
         box-shadow: 0 4px 15px rgba(67, 160, 71, 0.3);
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(67, 160, 71, 0.5);
     }
     
     /* --- TABS --- */
@@ -131,7 +187,9 @@ st.markdown("""
     }
     .stTabs [data-baseweb="tab"] {
         height: 50px;
+        white-space: pre-wrap;
         background-color: transparent;
+        border-radius: 10px;
         color: #000000;
         font-weight: 800;
     }
@@ -152,6 +210,10 @@ st.markdown("""
         color: #1b5e20 !important;
     }
 </style>
+<div class="leaf">🍃</div>
+<div class="leaf">🍂</div>
+<div class="leaf">🍃</div>
+<div class="leaf">🍂</div>
 """, unsafe_allow_html=True)
 
 # ==================== CONSTANTS ====================
@@ -236,12 +298,17 @@ ALL_BRANDS = [
 # Simplified Multipliers for logic
 def get_product_multiplier(product_type: str) -> float:
     base_multipliers = {
+        # High Impact
         'Fast Fashion': 2.5, 'Jeans': 3.2, 'Coat': 4.2, 'Leather Goods': 3.5, 'Shoes': 3.0, 'Sneakers': 3.0,
         'Electronics': 1.8, 'Smartphone': 2.5, 'Laptop': 3.0, 'Desktop Computer': 3.5, 'Gaming Console': 3.0, 'TV': 3.0,
         'Meat': 1.5, 'Dairy Products': 0.6, 'Cheese': 1.0, 'Flight Ticket': 5.0, 'Car Parts': 2.0,
         'Sofa': 4.0, 'Bed': 3.5, 'Appliance': 2.0, 'AC': 4.0,
+        
+        # Medium Impact
         'Cotton Shirt': 1.5, 'T-Shirt': 1.5, 'Furniture': 1.5, 'Cosmetics': 1.5, 'Perfume': 1.5,
         'Books (New)': 0.5, 'Paper': 0.5, 'Plastic Items': 2.0,
+
+        # Low Impact / Eco
         'Local Groceries': 0.3, 'Organic Vegetables': 0.2, 'Bulk Grains': 0.2, 'Plant-Based Meat': 0.5,
         'Bamboo Fabric': 0.8, 'Hemp Clothing': 0.6, 'Linen Shirt': 0.8, 'Organic Cotton': 0.8,
         'Books (Used)': 0.05, 'E-book': 0.02, 'Audiobook': 0.02, 'Digital Download': 0.02,
@@ -405,6 +472,7 @@ def check_badges():
         st.session_state.user_profile['badges'].append(new_badge)
         badge_info = BADGES[new_badge]
         st.toast(f"🏆 BADGE UNLOCKED: {badge_info['name']}", icon=badge_info['icon'])
+        # REMOVED BALLOONS HERE as per request
         save_data({
             'purchases': st.session_state.purchases,
             'user_profile': st.session_state.user_profile
@@ -549,119 +617,49 @@ with tab_dash:
                 unsafe_allow_html=True
             )
 
-# --- ANALYTICS TAB (MATCHING DESIGN) ---
+# --- ANALYTICS TAB ---
 with tab_analytics:
-    st.markdown("### Your Community Impact")
-    
     if st.session_state.purchases:
         df = pd.DataFrame(st.session_state.purchases)
         df['date_dt'] = pd.to_datetime(df['date'])
         
-        # --- 1. METRICS ROW ---
-        # Calculate equivalents based on Eco items (Assumed saved vs new)
-        eco_df = df[df['type'].isin(ECO_FRIENDLY_CATEGORIES)]
-        saved_co2_kg = eco_df['co2_impact'].sum() # We assume eco items already saved ~50%
+        row1_col1, row1_col2 = st.columns(2)
         
-        # Equivalents logic
-        trees_saved = saved_co2_kg / 20.0 # Approx 20kg/tree/year
-        lightbulbs = saved_co2_kg * 50 # Arbitrary units for gamification
-        ice_saved = saved_co2_kg * 3.0 # 1kg CO2 melts 3kg ice
-        cars_off = saved_co2_kg / 100.0 # Small fraction for individual
-        
-        m_col1, m_col2, m_col3, m_col4, m_col5 = st.columns(5)
-        
-        def metric_html(icon, value, label):
-            return f"""
-            <div class="metric-card">
-                <span class="metric-icon">{icon}</span>
-                <span class="metric-value">{value}</span>
-                <span class="metric-label">{label}</span>
-            </div>
-            """
-            
-        with m_col1: st.markdown(metric_html("☁️", f"{saved_co2_kg:.1f}", "Kg of CO₂ Offset"), unsafe_allow_html=True)
-        with m_col2: st.markdown(metric_html("🌲", f"{trees_saved:.1f}", "Trees Planted Eqv."), unsafe_allow_html=True)
-        with m_col3: st.markdown(metric_html("💡", f"{int(lightbulbs)}", "Lightbulbs Powered"), unsafe_allow_html=True)
-        with m_col4: st.markdown(metric_html("❄️", f"{ice_saved:.1f}", "Kg Arctic Ice Saved"), unsafe_allow_html=True)
-        with m_col5: st.markdown(metric_html("🚗", f"{cars_off:.2f}", "Cars Off Road"), unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        # --- 2. MIDDLE ROW (CHARTS) ---
-        c_row1, c_row2, c_row3 = st.columns(3)
-        
-        # Chart 1: Customer Adoption -> Spending Trend (Area)
-        with c_row1:
-            st.markdown("**Impact Trend**")
-            trend_df = df.groupby('date_dt')['co2_impact'].sum().reset_index().sort_values('date_dt')
-            fig_area = px.area(trend_df, x='date_dt', y='co2_impact', 
-                               color_discrete_sequence=['#4caf50'])
-            fig_area.update_layout(
-                margin=dict(l=0, r=0, t=10, b=0),
-                height=200,
-                paper_bgcolor='rgba(255,255,255,0.5)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                xaxis_title=None, yaxis_title=None,
-                showlegend=False
+        with row1_col1:
+            st.markdown("### 📅 Spending vs CO₂ Over Time")
+            fig_line = px.line(df, x='date_dt', y=['price', 'co2_impact'], markers=True, 
+                               labels={'value': 'Amount', 'date_dt': 'Date'},
+                               color_discrete_map={'price': '#2ecc71', 'co2_impact': '#e74c3c'})
+            fig_line.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)', 
+                plot_bgcolor='rgba(0,0,0,0)', 
+                legend_title_text='',
+                font=dict(color='black')
             )
-            fig_area.update_yaxes(showgrid=False)
-            st.plotly_chart(fig_area, use_container_width=True)
+            st.plotly_chart(fig_line, use_container_width=True)
 
-        # Chart 2: Emissions by Type (Stacked Horizontal Bar)
-        with c_row2:
-            st.markdown("**Emissions by Category**")
-            cat_df = df.groupby('type')['co2_impact'].sum().reset_index().sort_values('co2_impact', ascending=True).tail(5)
-            fig_bar_h = px.bar(cat_df, x='co2_impact', y='type', orientation='h',
-                               color='co2_impact', color_continuous_scale=['#81c784', '#2e7d32'])
-            fig_bar_h.update_layout(
-                margin=dict(l=0, r=0, t=10, b=0),
-                height=200,
-                paper_bgcolor='rgba(255,255,255,0.5)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                xaxis_title=None, yaxis_title=None,
-                coloraxis_showscale=False
-            )
-            st.plotly_chart(fig_bar_h, use_container_width=True)
-
-        # Chart 3: Demographic -> Eco vs Standard (Donut/Pie)
-        with c_row3:
-            st.markdown("**Choice Distribution**")
-            df['Category'] = df['type'].apply(lambda x: 'Eco-Friendly' if x in ECO_FRIENDLY_CATEGORIES else 'Standard')
-            pie_df = df['Category'].value_counts().reset_index()
-            pie_df.columns = ['Category', 'Count']
-            
-            fig_pie = px.pie(pie_df, values='Count', names='Category', hole=0.4,
-                             color='Category', color_discrete_map={'Eco-Friendly': '#4caf50', 'Standard': '#2e7d32'})
-            fig_pie.update_layout(
-                margin=dict(l=0, r=0, t=10, b=0),
-                height=200,
-                paper_bgcolor='rgba(255,255,255,0.5)',
-                showlegend=True,
-                legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="right", x=1)
-            )
+        with row1_col2:
+            st.markdown("### 🍩 Category Impact Breakdown")
+            fig_pie = px.sunburst(df, path=['type', 'brand'], values='co2_impact', 
+                                  color='co2_impact', color_continuous_scale='RdYlGn_r')
+            fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', font=dict(color='black'))
             st.plotly_chart(fig_pie, use_container_width=True)
-
-        # --- 3. BOTTOM ROW (TOTAL EMISSIONS) ---
-        st.markdown("**Total Emissions History**")
-        
-        # Prepare data for stacked bar (Eco vs Standard Impact per day)
-        daily_df = df.groupby(['date_dt', 'Category'])['co2_impact'].sum().reset_index()
-        
-        fig_main = px.bar(daily_df, x='date_dt', y='co2_impact', color='Category',
-                          color_discrete_map={'Eco-Friendly': '#81c784', 'Standard': '#2e7d32'},
-                          labels={'co2_impact': 'CO₂ (kg)', 'date_dt': 'Date'})
-        
-        fig_main.update_layout(
-            height=300,
-            paper_bgcolor='rgba(255,255,255,0.5)',
-            plot_bgcolor='rgba(255,255,255,0)',
-            margin=dict(l=20, r=20, t=20, b=20),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            
+        st.markdown("### 📉 Efficiency Scatter Plot (Price vs Impact)")
+        st.caption("Identify items that were expensive but low impact (Green zone) vs cheap but high impact (Red zone)")
+        fig_scatter = px.scatter(df, x='price', y='co2_impact', color='type', size='co2_impact',
+                                 hover_data=['brand'], size_max=40)
+        fig_scatter.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)', 
+            plot_bgcolor='rgba(255,255,255,0.4)',
+            xaxis_title="Price (₹)",
+            yaxis_title="CO₂ Impact (kg)",
+            font=dict(color='black')
         )
-        st.plotly_chart(fig_main, use_container_width=True)
-
+        st.plotly_chart(fig_scatter, use_container_width=True)
+        
     else:
-        st.info("Log your purchases in the Dashboard tab to see your Community Impact!")
+        st.info("Log some data to unlock analytics!")
 
 # --- PROFILE TAB ---
 with tab_profile:
@@ -688,3 +686,4 @@ with tab_profile:
             st.session_state.purchases = []
             st.session_state.user_profile['badges'] = []
             save_data(get_default_data())
+        
