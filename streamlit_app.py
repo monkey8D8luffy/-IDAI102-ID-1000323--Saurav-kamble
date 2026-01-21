@@ -518,11 +518,12 @@ with tab_dash:
                 st.metric("Total Spent", f"₹{total_spend:,.0f}", delta=f"{len(df)} items")
             with m2:
                 st.metric("Total CO₂", f"{total_co2:.1f} kg", delta_color="inverse", delta="Low is good!")
-            with m3:
+           with m3:
                 eco_items = df[df['type'].isin(ECO_FRIENDLY_CATEGORIES)].shape[0]
-               rate = (eco_items/len(df)*100) if len(df) > 0 else 0
-                st.metric("Eco Choices", f"{eco_items}", f"{rate:.0f}% Rate")
-
+                # The line below was misaligned. I have fixed the indentation:
+                rate = (eco_items/len(df)*100) if len(df) > 0 else 0
+                st.metric("Eco Choices", f"{eco_items}", f"{rate:.0f}% Rate")  
+                
             st.markdown("#### 🕰️ Recent Activity")
             recent = df.tail(5).iloc[::-1]
             for _, row in recent.iterrows():
