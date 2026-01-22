@@ -225,6 +225,38 @@ st.markdown("""
         margin-bottom: 10px;
         color: #1b5e20 !important;
     }
+
+    /* --- LEAF BADGE COMPONENT --- */
+    .leaf-badge {
+        /* Shape: Sharp top-left and bottom-right creates a leaf look */
+        border-radius: 0px 50px 0px 50px;
+        
+        /* Gradient: Green -> Yellow -> Brown */
+        background: linear-gradient(135deg, #a5d6a7 0%, #fff59d 50%, #bcaaa4 100%);
+        
+        padding: 15px 20px;
+        color: #4e342e !important; /* Dark brown text for readability */
+        font-weight: 800;
+        text-align: center;
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        border: 2px solid rgba(255,255,255,0.6);
+        margin-top: 10px;
+        transition: transform 0.3s ease;
+    }
+    
+    .leaf-badge:hover {
+        transform: scale(1.05) rotate(2deg); /* Slight tilt on hover */
+        box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    }
+    
+    .leaf-badge small {
+        display: block;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.8;
+        margin-bottom: 5px;
+    }
 </style>
 <div class="leaf">🍃</div>
 <div class="leaf">🍂</div>
