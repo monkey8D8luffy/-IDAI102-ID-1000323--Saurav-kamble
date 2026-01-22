@@ -727,50 +727,139 @@ with tab_dash:
                 """, 
                 unsafe_allow_html=True
             )
-# --- ANALYTICS TAB ---
+# --- ANALYTICS TAB (REVAMPED) ---
 with tab_analytics:
     if st.session_state.purchases:
         df = pd.DataFrame(st.session_state.purchases)
         df['date_dt'] = pd.to_datetime(df['date'])
         
-        row1_col1, row1_col2 = st.columns(2)
-        
-        with row1_col1:
-            st.markdown("### 📅 Spending vs CO₂ Over Time")
-            fig_line = px.line(df, x='date_dt', y=['price', 'co2_impact'], markers=True, 
-                               labels={'value': 'Amount', 'date_dt': 'Date'},
-                               color_discrete_map={'price': '#2ecc71', 'co2_impact': '#e74c3c'})
-            fig_line.update_layout(
+        # Create Sub-Tabs for better organization
+        sub_trends, sub_compare = st.tabs(["📈 Easy Insights", "⚖️ Comparative Analysis"])
+
+        # --- SUB-TAB 1: EASY INSIGHTS ---
+        with sub_trends:
+            st.markdown("### 🔍 Where is my impact coming from?")
+            
+            # 1. SIMPLE BAR CHART: Top Polluters (Easiest to understand)
+            # Groups data by Category and sorts by CO2 impact
+            category_group = df.groupby('type')[['co2_impact', 'price']].sum().reset_index()
+            category_group = category_group.sort_values(by='co2_impact', ascending=False).head(5)
+            
+            fig_bar = px.bar(
+                category_group, 
+                x='co2_impact', 
+                y='type', 
+                orientation='h',
+                text='co2_impact',
+                title="🏆 Top 5 Categories Adding to Your Footprint",
+                labels={'co2_impact': 'CO₂ (kg)', 'type': 'Category'},
+                color='co2_impact',
+                color_continuous_scale='Reds'
+            )
+            fig_bar.update_traces(texttemplate='%{text:.1f} kg', textposition='outside')
+            fig_bar.update_layout(
                 paper_bgcolor='rgba(0,0,0,0)', 
                 plot_bgcolor='rgba(0,0,0,0)', 
-                legend_title_text='',
-                font=dict(color='black')
+                font=dict(color='black'),
+                xaxis_visible=False # Hide x-axis numbers for simplicity
             )
-            st.plotly_chart(fig_line, use_container_width=True)
+            st.plotly_chart(fig_bar, use_container_width=True)
 
-        with row1_col2:
-            st.markdown("### 🍩 Category Impact Breakdown")
-            fig_pie = px.sunburst(df, path=['type', 'brand'], values='co2_impact', 
-                                  color='co2_impact', color_continuous_scale='RdYlGn_r')
-            fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', font=dict(color='black'))
-            st.plotly_chart(fig_pie, use_container_width=True)
+            # 2. SIMPLE TREND LINE: Are you getting better?
+            st.markdown("### 📉 My Carbon Trend")
+            # Resample by day to smooth out the line
+            daily_trend = df.groupby('date')['co2_impact'].sum().reset_index()
             
-        st.markdown("### 📉 Efficiency Scatter Plot (Price vs Impact)")
-        st.caption("Identify items that were expensive but low impact (Green zone) vs cheap but high impact (Red zone)")
-        fig_scatter = px.scatter(df, x='price', y='co2_impact', color='type', size='co2_impact',
-                                 hover_data=['brand'], size_max=40)
-        fig_scatter.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)', 
-            plot_bgcolor='rgba(255,255,255,0.4)',
-            xaxis_title="Price (₹)",
-            yaxis_title="CO₂ Impact (kg)",
-            font=dict(color='black')
-        )
-        st.plotly_chart(fig_scatter, use_container_width=True)
-        
-    else:
-        st.info("Log some data to unlock analytics!")
+            fig_trend = px.area(
+                daily_trend, 
+                x='date', 
+                y='co2_impact',
+                title="Daily CO₂ Emissions (Lower is Better)",
+                labels={'co2_impact': 'Impact (kg)', 'date': 'Date'},
+                color_discrete_sequence=['#2e7d32'] # Green color
+            )
+            fig_trend.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)', 
+                plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='black'),
+                yaxis_gridcolor='rgba(0,0,0,0.1)'
+            )
+            st.plotly_chart(fig_trend, use_container_width=True)
 
+        # --- SUB-TAB 2: COMPARATIVE ANALYSIS ---
+        with sub_compare:
+            st.markdown("### 🆚 Eco vs. Non-Eco Showdown")
+            
+            # Split data into Eco and Non-Eco
+            eco_df = df[df['type'].isin(ECO_FRIENDLY_CATEGORIES)]
+            non_eco_df = df[~df['type'].isin(ECO_FRIENDLY_CATEGORIES)]
+            
+            # Calculate totals
+            eco_count = len(eco_df)
+            non_eco_count = len(non_eco_df)
+            eco_spend = eco_df['price'].sum()
+            non_eco_spend = non_eco_df['price'].sum()
+            eco_co2 = eco_df['co2_impact'].sum()
+            non_eco_co2 = non_eco_df['co2_impact'].sum()
+
+            # 1. SIDE-BY-SIDE METRICS
+            c1, c2 = st.columns(2)
+            with c1:
+                st.markdown(
+                    f"""
+                    <div style="background: #e8f5e9; padding: 20px; border-radius: 15px; border: 2px solid #2e7d32; text-align: center;">
+                        <h3 style="color: #2e7d32; margin:0;">🌱 Eco Choices</h3>
+                        <h1 style="color: #1b5e20; margin:0;">{eco_count}</h1>
+                        <p style="color: #333;">Items Bought</p>
+                        <hr style="border-top: 1px solid #a5d6a7;">
+                        <p style="font-weight: bold; color: #1b5e20;">Total CO₂: {eco_co2:.1f} kg</p>
+                    </div>
+                    """, unsafe_allow_html=True
+                )
+            with c2:
+                st.markdown(
+                    f"""
+                    <div style="background: #ffebee; padding: 20px; border-radius: 15px; border: 2px solid #c62828; text-align: center;">
+                        <h3 style="color: #c62828; margin:0;">🏭 Regular Choices</h3>
+                        <h1 style="color: #b71c1c; margin:0;">{non_eco_count}</h1>
+                        <p style="color: #333;">Items Bought</p>
+                        <hr style="border-top: 1px solid #ef9a9a;">
+                        <p style="font-weight: bold; color: #b71c1c;">Total CO₂: {non_eco_co2:.1f} kg</p>
+                    </div>
+                    """, unsafe_allow_html=True
+                )
+
+            # 2. COMPARATIVE BAR CHART
+            st.write("") # Spacer
+            st.markdown("### ⚖️ Visual Comparison")
+            
+            # Prepare data for grouped bar chart
+            comp_data = {
+                'Type': ['Money Spent (₹)', 'Carbon Emitted (kg)'],
+                'Eco-Friendly': [eco_spend, eco_co2],
+                'Regular': [non_eco_spend, non_eco_co2]
+            }
+            
+            fig_comp = go.Figure(data=[
+                go.Bar(name='Eco-Friendly', x=comp_data['Type'], y=comp_data['Eco-Friendly'], marker_color='#66bb6a'),
+                go.Bar(name='Regular', x=comp_data['Type'], y=comp_data['Regular'], marker_color='#ef5350')
+            ])
+            
+            fig_comp.update_layout(
+                barmode='group',
+                title="Spending vs. Impact Comparison",
+                paper_bgcolor='rgba(0,0,0,0)', 
+                plot_bgcolor='rgba(255,255,255,0.5)',
+                font=dict(color='black'),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            )
+            st.plotly_chart(fig_comp, use_container_width=True)
+            
+            st.info("💡 **Insight:** Notice how 'Regular' items often cost the same amount of money but produce vastly more CO₂.")
+
+    else:
+        st.info("📊 Log your first purchase in the Dashboard to unlock Analytics!")
+        
 # --- PROFILE TAB ---
 with tab_profile:
     p_col1, p_col2 = st.columns([1, 2])
