@@ -2,7 +2,7 @@
 
 **ShopImpact** is a gamified personal finance tool that tracks the **environmental cost** of shopping. It estimates carbon footprint, water usage, and tree loss for every purchase, encouraging sustainable habits through real-time visual feedback and badges.
 
-## 🚀 Key Features
+##  Key Features
 
 * **Real-Time Impact Tracking:** Calculates **CO₂**, **Water Wasted (L)**, and **Trees Cut** based on product category and price.
 * **Gamification:** Unlocks badges (e.g., "👑 Thrift King", "🛡️ Eco Warrior") for hitting sustainability milestones.
@@ -11,7 +11,7 @@
 * **Analytics:** Interactive charts showing Spending vs. CO₂ trends, category breakdowns, and "Eco vs. Regular" comparisons.
 * **Data Management:** Local data persistence with **CSV Export** and **Reset Data** capabilities.
 
-## 🛠️ Installation & Setup
+##  Installation & Setup
 
 1.  **Prerequisites:**
     * Python 3.8+
@@ -31,13 +31,13 @@
 4.  **Access:**
     Open `http://localhost:8501` in your browser.
 
-## 📂 Files
+##  Files
 
 * `app.py`: Main application code.
 * `shopimpact_data_v3.json`: Auto-generated local database for user history.
 * `shopimpact_data.csv`: Generated file when using the "Export" feature.
 
-## 📊 Calculation Logic
+##  Calculation Logic
 
 * **Carbon (CO₂):** `(Price × Multiplier) / 100`
     * *Multipliers:* Fast Fashion (2.5), Electronics (1.8), Second-hand (0.1).
