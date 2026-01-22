@@ -558,19 +558,35 @@ if 'initialized' not in st.session_state:
 # ==================== MAIN UI ====================
 
 # HEADER
-col_h1, col_h2 = st.columns([3, 1])
+col_h1, col_h2 = st.columns([2.5, 1.2]) # Adjusted ratio to give the badge more space
+
 with col_h1:
     st.markdown("# 🍃 ShopImpact")
     st.markdown("### *Your Conscious Shopping Companion*")
+
 with col_h2:
     if st.session_state.user_profile['badges']:
         latest = st.session_state.user_profile['badges'][-1]
-        st.info(f"Latest Badge: {BADGES[latest]['icon']} {BADGES[latest]['name']}")
+        badge_name = BADGES[latest]['name']
+        badge_icon = BADGES[latest]['icon']
+        
+        # Render the custom Leaf Badge
+        st.markdown(f"""
+            <div class="leaf-badge">
+                <small>Latest Unlocked</small>
+                <span style="font-size: 1.3rem;">{badge_icon} {badge_name}</span>
+            </div>
+        """, unsafe_allow_html=True)
     else:
-        st.info("Start shopping to earn badges!")
+        # Render a greyed-out Leaf Badge for empty state
+        st.markdown("""
+            <div class="leaf-badge" style="background: linear-gradient(135deg, #e0e0e0, #f5f5f5); color: #757575 !important;">
+                <small>No Badges Yet</small>
+                <span style="font-size: 1rem;">Start Shopping! 🛍️</span>
+            </div>
+        """, unsafe_allow_html=True)
 
 st.markdown("---")
-
 # TABS
 tab_dash, tab_analytics, tab_profile = st.tabs(["🛍️ Dashboard", "📊 Analytics", "🏆 Profile & Badges"])
 
