@@ -727,21 +727,20 @@ with tab_dash:
                 """, 
                 unsafe_allow_html=True
             )
-# --- ANALYTICS TAB (REVAMPED) ---
+# --- ANALYTICS TAB (FIXED VISIBILITY) ---
 with tab_analytics:
     if st.session_state.purchases:
         df = pd.DataFrame(st.session_state.purchases)
         df['date_dt'] = pd.to_datetime(df['date'])
         
-        # Create Sub-Tabs for better organization
+        # Create Sub-Tabs
         sub_trends, sub_compare = st.tabs(["📈 Easy Insights", "⚖️ Comparative Analysis"])
 
         # --- SUB-TAB 1: EASY INSIGHTS ---
         with sub_trends:
             st.markdown("### 🔍 Where is my impact coming from?")
             
-            # 1. SIMPLE BAR CHART: Top Polluters (Easiest to understand)
-            # Groups data by Category and sorts by CO2 impact
+            # 1. SIMPLE BAR CHART
             category_group = df.groupby('type')[['co2_impact', 'price']].sum().reset_index()
             category_group = category_group.sort_values(by='co2_impact', ascending=False).head(5)
             
@@ -756,18 +755,21 @@ with tab_analytics:
                 color='co2_impact',
                 color_continuous_scale='Reds'
             )
-            fig_bar.update_traces(texttemplate='%{text:.1f} kg', textposition='outside')
+            
+            # FORCE BLACK TEXT EVERYWHERE
+            fig_bar.update_traces(texttemplate='%{text:.1f} kg', textposition='outside', textfont_color='black')
             fig_bar.update_layout(
                 paper_bgcolor='rgba(0,0,0,0)', 
                 plot_bgcolor='rgba(0,0,0,0)', 
-                font=dict(color='black'),
-                xaxis_visible=False # Hide x-axis numbers for simplicity
+                font=dict(color='black'),        # Main Font Black
+                xaxis=dict(showticklabels=False, title_font=dict(color='black')), # Hide x numbers, keep title black
+                yaxis=dict(tickfont=dict(color='black'), title_font=dict(color='black')), # Force Y-axis labels black
+                title_font=dict(color='black')
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
-            # 2. SIMPLE TREND LINE: Are you getting better?
+            # 2. SIMPLE TREND LINE
             st.markdown("### 📉 My Carbon Trend")
-            # Resample by day to smooth out the line
             daily_trend = df.groupby('date')['co2_impact'].sum().reset_index()
             
             fig_trend = px.area(
@@ -776,13 +778,17 @@ with tab_analytics:
                 y='co2_impact',
                 title="Daily CO₂ Emissions (Lower is Better)",
                 labels={'co2_impact': 'Impact (kg)', 'date': 'Date'},
-                color_discrete_sequence=['#2e7d32'] # Green color
+                color_discrete_sequence=['#2e7d32']
             )
+            
+            # FORCE BLACK TEXT EVERYWHERE
             fig_trend.update_layout(
                 paper_bgcolor='rgba(0,0,0,0)', 
                 plot_bgcolor='rgba(0,0,0,0)',
                 font=dict(color='black'),
-                yaxis_gridcolor='rgba(0,0,0,0.1)'
+                xaxis=dict(tickfont=dict(color='black'), title_font=dict(color='black')),
+                yaxis=dict(tickfont=dict(color='black'), title_font=dict(color='black'), gridcolor='rgba(0,0,0,0.1)'),
+                title_font=dict(color='black')
             )
             st.plotly_chart(fig_trend, use_container_width=True)
 
@@ -790,11 +796,11 @@ with tab_analytics:
         with sub_compare:
             st.markdown("### 🆚 Eco vs. Non-Eco Showdown")
             
-            # Split data into Eco and Non-Eco
+            # Split data
             eco_df = df[df['type'].isin(ECO_FRIENDLY_CATEGORIES)]
             non_eco_df = df[~df['type'].isin(ECO_FRIENDLY_CATEGORIES)]
             
-            # Calculate totals
+            # Stats
             eco_count = len(eco_df)
             non_eco_count = len(non_eco_df)
             eco_spend = eco_df['price'].sum()
@@ -802,7 +808,7 @@ with tab_analytics:
             eco_co2 = eco_df['co2_impact'].sum()
             non_eco_co2 = non_eco_df['co2_impact'].sum()
 
-            # 1. SIDE-BY-SIDE METRICS
+            # Cards
             c1, c2 = st.columns(2)
             with c1:
                 st.markdown(
@@ -810,7 +816,7 @@ with tab_analytics:
                     <div style="background: #e8f5e9; padding: 20px; border-radius: 15px; border: 2px solid #2e7d32; text-align: center;">
                         <h3 style="color: #2e7d32; margin:0;">🌱 Eco Choices</h3>
                         <h1 style="color: #1b5e20; margin:0;">{eco_count}</h1>
-                        <p style="color: #333;">Items Bought</p>
+                        <p style="color: #333 !important;">Items Bought</p>
                         <hr style="border-top: 1px solid #a5d6a7;">
                         <p style="font-weight: bold; color: #1b5e20;">Total CO₂: {eco_co2:.1f} kg</p>
                     </div>
@@ -822,18 +828,17 @@ with tab_analytics:
                     <div style="background: #ffebee; padding: 20px; border-radius: 15px; border: 2px solid #c62828; text-align: center;">
                         <h3 style="color: #c62828; margin:0;">🏭 Regular Choices</h3>
                         <h1 style="color: #b71c1c; margin:0;">{non_eco_count}</h1>
-                        <p style="color: #333;">Items Bought</p>
+                        <p style="color: #333 !important;">Items Bought</p>
                         <hr style="border-top: 1px solid #ef9a9a;">
                         <p style="font-weight: bold; color: #b71c1c;">Total CO₂: {non_eco_co2:.1f} kg</p>
                     </div>
                     """, unsafe_allow_html=True
                 )
 
-            # 2. COMPARATIVE BAR CHART
-            st.write("") # Spacer
+            # Comparative Chart
+            st.write("") 
             st.markdown("### ⚖️ Visual Comparison")
             
-            # Prepare data for grouped bar chart
             comp_data = {
                 'Type': ['Money Spent (₹)', 'Carbon Emitted (kg)'],
                 'Eco-Friendly': [eco_spend, eco_co2],
@@ -845,13 +850,17 @@ with tab_analytics:
                 go.Bar(name='Regular', x=comp_data['Type'], y=comp_data['Regular'], marker_color='#ef5350')
             ])
             
+            # FORCE BLACK TEXT EVERYWHERE
             fig_comp.update_layout(
                 barmode='group',
                 title="Spending vs. Impact Comparison",
                 paper_bgcolor='rgba(0,0,0,0)', 
                 plot_bgcolor='rgba(255,255,255,0.5)',
-                font=dict(color='black'),
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                font=dict(color='black'), # Global black font
+                legend=dict(orientation="h", y=1.02, x=1, font=dict(color='black')), # Legend text black
+                xaxis=dict(tickfont=dict(color='black')), # X-axis text black
+                yaxis=dict(tickfont=dict(color='black')), # Y-axis text black
+                title_font=dict(color='black')
             )
             st.plotly_chart(fig_comp, use_container_width=True)
             
