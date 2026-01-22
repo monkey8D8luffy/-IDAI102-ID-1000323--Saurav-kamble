@@ -162,9 +162,12 @@ st.markdown("""
     [data-testid="stMetricValue"] { color: #000000 !important; }
     [data-testid="stMetricLabel"] { color: #333333 !important; }
 
-    /* --- BUTTONS --- */
-    .stButton > button {
-        background: linear-gradient(45deg, #43a047, #66bb6a);
+   /* --- BUTTONS (UPDATED FIX) --- */
+    /* 1. Apply Green Theme to ALL buttons (Regular, Download, and Form Submit) */
+    .stButton > button, 
+    .stDownloadButton > button, 
+    div[data-testid="stFormSubmitButton"] > button {
+        background: linear-gradient(45deg, #43a047, #66bb6a) !important;
         color: white !important;
         border: none;
         border-radius: 15px;
@@ -173,9 +176,22 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(67, 160, 71, 0.3);
         transition: all 0.3s ease;
     }
-    .stButton > button:hover {
+
+    /* 2. CRITICAL: Force the text inside the buttons (which are <p> tags) to be WHITE */
+    /* This overrides the global 'black text' rule that was hiding your text */
+    .stButton > button p, 
+    .stDownloadButton > button p, 
+    div[data-testid="stFormSubmitButton"] > button p {
+        color: #ffffff !important;
+    }
+
+    /* 3. Hover Effects */
+    .stButton > button:hover, 
+    .stDownloadButton > button:hover, 
+    div[data-testid="stFormSubmitButton"] > button:hover {
         transform: scale(1.05);
         box-shadow: 0 6px 20px rgba(67, 160, 71, 0.5);
+        color: #ffffff !important;
     }
     
     /* --- TABS --- */
