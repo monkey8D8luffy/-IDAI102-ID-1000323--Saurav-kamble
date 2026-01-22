@@ -681,9 +681,55 @@ with tab_profile:
                 save_data({'purchases': st.session_state.purchases, 'user_profile': st.session_state.user_profile})
                 st.success("Updated!")
                 st.rerun()
-                
+
+        # --- NEW DATA MANAGEMENT SECTION ---
+        st.markdown("### 📂 Data Management")
+        
+        # 1. Export Button
+        if st.session_state.purchases:
+            df_export = pd.DataFrame(st.session_state.purchases)
+            csv = df_export.to_csv(index=False).encode('utf-8')
+
+            st.download_button(
+                label="📥 Download Data as CSV",
+                data=csv,
+                file_name='shopimpact_data.csv',
+                mime='text/csv',
+                key='download-csv'
+            )
+        else:
+            st.warning("Log items to enable export.")
+
+        # 2. Reset Button (Moved here)
+        st.markdown("---")
         if st.button("🗑️ Reset All Data", type="secondary"):
             st.session_state.purchases = []
             st.session_state.user_profile['badges'] = []
             save_data(get_default_data())
+            st.rerun()
+
+    with p_col2:
+        # Display Badges Visually in the second column
+        st.markdown("### 🏆 Your Hall of Fame")
         
+        my_badges = st.session_state.user_profile.get('badges', [])
+        
+        if not my_badges:
+             st.info("No badges earned yet. Start shopping to unlock them!")
+        else:
+            # Create a grid for badges
+            cols = st.columns(3)
+            for idx, badge_key in enumerate(my_badges):
+                badge = BADGES[badge_key]
+                with cols[idx % 3]:
+                    st.markdown(
+                        f"""
+                        <div style="background: rgba(255,255,255,0.8); padding: 15px; border-radius: 15px; text-align: center; border: 2px solid #e0f2f1; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                            <div style="font-size: 3rem; margin-bottom: 10px;">{badge['icon']}</div>
+                            <div style="font-weight: bold; color: #2e7d32;">{badge['name']}</div>
+                            <div style="font-size: 0.8rem; color: #555;">{badge['desc']}</div>
+                        </div>
+                        <div style="height: 10px;"></div>
+                        """, 
+                        unsafe_allow_html=True
+                    )
