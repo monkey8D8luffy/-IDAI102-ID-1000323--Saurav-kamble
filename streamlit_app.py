@@ -563,6 +563,7 @@ with tab_dash:
                 
                 price = st.slider("💰 Price (₹)", min_value=0, max_value=50000, value=500, step=100)
                 
+                # Note: Button CSS is handled globally now
                 submitted = st.form_submit_button("Add to Tracker", type="primary", use_container_width=True)
                 
                 if submitted:
@@ -573,6 +574,7 @@ with tab_dash:
                         # TRIGGER ANIMATION LOGIC
                         is_eco_purchase = product_type in ECO_FRIENDLY_CATEGORIES
                         trigger_animation(is_eco_purchase)
+                        st.rerun() # Rerun to update the new stats immediately
                         
                     else:
                         st.warning("Please set a price greater than 0.")
@@ -597,6 +599,7 @@ with tab_dash:
             total_spend = df['price'].sum()
             total_co2 = df['co2_impact'].sum()
             
+            # 1. Standard Metrics
             m1, m2, m3 = st.columns(3)
             with m1:
                 st.metric("Total Spent", f"₹{total_spend:,.0f}", delta=f"{len(df)} items")
@@ -607,6 +610,50 @@ with tab_dash:
                 rate = (eco_items/len(df)*100) if len(df) > 0 else 0
                 st.metric("Eco Choices", f"{eco_items}", f"{rate:.0f}% Rate")
 
+            # --- NEW: HIDDEN TOLL SECTION (TREES & WATER) ---
+            st.markdown("#### 🌍 The Hidden Toll")
+            
+            # Logic: Estimate Water (Liters) and Trees based on category keywords
+            water_wasted = 0
+            trees_cut = 0
+            
+            for _, row in df.iterrows():
+                ptype = row['type']
+                impact = row['co2_impact']
+                
+                # Water Logic: Textiles & Meat use massive amounts of water
+                if any(x in ptype for x in ['Shirt', 'Jeans', 'Cotton', 'Meat', 'Dairy', 'Fashion', 'Dress']):
+                    water_wasted += impact * 150 # High water multiplier
+                else:
+                    water_wasted += impact * 20 # Base water usage for manufacturing
+
+                # Tree Logic: Paper, Furniture, and Packaging affect trees
+                if any(x in ptype for x in ['Paper', 'Book', 'Wood', 'Furniture', 'Table', 'Chair', 'Sofa']):
+                    trees_cut += impact * 0.05 
+                else:
+                    trees_cut += impact * 0.002 # Minimal packaging impact
+
+            t1, t2 = st.columns(2)
+            with t1:
+                st.markdown(
+                    f"""
+                    <div style="background: rgba(255, 255, 255, 0.6); padding: 15px; border-radius: 15px; border: 1px solid #90caf9;">
+                        <h3 style="margin:0; color: #1565c0 !important;">🚰 {water_wasted:,.0f} L</h3>
+                        <p style="margin:0; font-size: 0.9rem; color: #555 !important;">Water Wasted</p>
+                    </div>
+                    """, unsafe_allow_html=True
+                )
+            with t2:
+                 st.markdown(
+                    f"""
+                    <div style="background: rgba(255, 255, 255, 0.6); padding: 15px; border-radius: 15px; border: 1px solid #a1887f;">
+                        <h3 style="margin:0; color: #5d4037 !important;">🪓 {trees_cut:.2f}</h3>
+                        <p style="margin:0; font-size: 0.9rem; color: #555 !important;">Trees Cut Down</p>
+                    </div>
+                    """, unsafe_allow_html=True
+                )
+            
+            # --- RECENT ACTIVITY ---
             st.markdown("#### 🕰️ Recent Activity")
             recent = df.tail(5).iloc[::-1]
             for _, row in recent.iterrows():
@@ -632,7 +679,6 @@ with tab_dash:
                 """, 
                 unsafe_allow_html=True
             )
-
 # --- ANALYTICS TAB ---
 with tab_analytics:
     if st.session_state.purchases:
